@@ -1,0 +1,32 @@
+{
+    "id": "https://vcruise.online",
+    "name": "Круизы на теплоходе",
+    "description": "",
+    "short_name": "Круизы на теплоходе",
+    "default_locale": "ru",
+    "orientation": "any",
+    "icons": [
+        {
+            "src": "/image/layout/head/android-chrome-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/image/layout/head/android-chrome-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/image/layout/head/maskable_icon_x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ],
+    "start_url": "/",
+    "theme_color": "#ffffff",
+    "background_color": "#ffffff",
+    "display": "standalone"
+}

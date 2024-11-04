@@ -1,0 +1,16 @@
+// BEGIN import variables
+@import "variables";
+
+@import "../source/silicon/scss/variables";
+@import "../source/silicon/scss/variables-dark";
+@import "../source/silicon/scss/utilities";
+// END
+
+//BEGIN import style
+@import "../source/bootstrap/bootstrap";
+
+@import "../source/silicon/scss/root";
+@import "../source/silicon/scss/reboot";
+@import "../source/silicon/scss/components";
+
+@import 'styles';

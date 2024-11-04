@@ -1,0 +1,29 @@
+@import "../source/bootstrap/functions";
+
+$body-text-align: left;
+$icons-font-family: "Font Awesome 6 Pro" !default;
+$breadcrumb-divider: quote("\f054") !default;
+$breadcrumb-divider-flipped: quote("\f053") !default;
+
+// Grayscale
+$white:                       #fff !default;
+$gray-100:                    #f3f6ff !default;
+$gray-200:                    #eff2fc !default;
+$gray-300:                    #e2e5f1 !default;
+$gray-400:                    #d4d7e5 !default;
+$gray-500:                    #b4b7c9 !default;
+$gray-600:                    #9397ad !default;
+$gray-700:                    #565973 !default;
+$gray-800:                    #33354d !default;
+$gray-900:                    #0b0f19 !default;
+$black:                       #000 !default;
+
+// Theme colors
+$primary:                     #5EB8E7 !default;
+$secondary:                   $gray-200 !default;
+$info:                        #4c82f7 !default;
+$success:                     #22c55e !default;
+$warning:                     #ffba08 !default;
+$danger:                      #ef4444 !default;
+$light:                       $white !default;
+$dark:                        $gray-900 !default;
