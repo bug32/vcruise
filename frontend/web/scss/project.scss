@@ -7,10 +7,12 @@
 // END
 
 //BEGIN import style
-@import "../source/bootstrap/bootstrap";
+///@import "../source/bootstrap/bootstrap";
 
 @import "../source/silicon/scss/root";
 @import "../source/silicon/scss/reboot";
 @import "../source/silicon/scss/components";
+@import "../source/silicon/scss/theme";
 
+@import "page-loading";
 @import 'styles';

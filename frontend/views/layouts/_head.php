@@ -16,5 +16,18 @@ $this->registerLinkTag(['rel' => 'manifest', 'href' => '/manifest.json']);
 
 // $this->registerMetaTag(['name' => 'yandex-verification', 'content' => 'f78720e86097a21e']);
 
-$this->head();
-echo Html::endTag('head');
+$this->head();?>
+
+<script>
+    (function () {
+        window.onload = function () {
+            const preloader = document.querySelector('.page-loading');
+            preloader.classList.remove('active');
+            setTimeout(function () {
+               // preloader.remove();
+            }, 1000);
+        };
+    })();
+</script>
+
+<?php echo Html::endTag('head');

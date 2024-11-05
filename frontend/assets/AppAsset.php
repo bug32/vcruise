@@ -17,6 +17,8 @@ class AppAsset extends AssetBundle
         'scss/project.css'
     ];
     public $js = [
+        'source/silicon/js/theme-build.js',
+        'js/theme-switcher.js',
     ];
     public $depends = [
         YiiAsset::class,

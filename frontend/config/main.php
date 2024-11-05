@@ -92,7 +92,7 @@ return [
             'enablePrettyUrl'     => true,
             'showScriptName'      => false,
             'enableStrictParsing' => false,
-            'suffix' => '/',
+         //   'suffix' => '/',
             'normalizer'          => [
                 'class'  => UrlNormalizer::class,
             ],

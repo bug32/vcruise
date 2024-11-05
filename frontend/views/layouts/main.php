@@ -24,6 +24,12 @@ AppAsset::register($this);
 <?= $this->render('_header', []); ?>
 
 <main role="main" class="flex-shrink-0">
+    <!-- Page loading spinner -->
+    <div class="page-loading active">
+        <div class="page-loading-inner">
+            <div class="page-spinner"></div><span>Loading...</span>
+        </div>
+    </div>
         <?php Breadcrumbs::widget([
             'links' => isset($this->params['breadcrumbs']) ? $this->params['breadcrumbs'] : [],
         ]) ?>

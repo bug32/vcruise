@@ -8,13 +8,13 @@
  */
 
 // Bootstrap
-import 'bootstrap/dist/js/bootstrap.bundle'
+//import 'bootstrap/dist/js/bootstrap.bundle'
 
 // Smooth scroll
-import 'smooth-scroll/dist/smooth-scroll.polyfills'
+//import 'smooth-scroll/dist/smooth-scroll.polyfills'
 
 import './components/sticky-navbar'
-import './components/smooth-scroll'
+//import './components/smooth-scroll'
 import './components/scroll-top-button'
 import './components/password-visibility-toggle'
 import './components/element-parallax'
