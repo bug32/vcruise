@@ -81,6 +81,14 @@
         transform: translateY(100%);
       }
 
+      &.offcanvas-fluid{
+        top: 0;
+        right: 0;
+        width: 100%;
+        border-left: var(--si-offcanvas-border-width) solid var(--si-offcanvas-border-color);
+        transform: translateX(100%);
+      }
+
       &.showing,
       &.show:not(.hiding) {
         transform: none;

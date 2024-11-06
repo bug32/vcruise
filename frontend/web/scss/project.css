@@ -21746,4 +21746,12 @@ img-comparison-slider:focus {
   height: 625px;
 }
 
+.w-20 {
+  width: 20%;
+}
+
+.bottom-1rem {
+  bottom: 1rem;
+}
+
 /*# sourceMappingURL=project.css.map */
