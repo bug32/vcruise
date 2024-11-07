@@ -8,6 +8,23 @@
   height: 625px;
 }
 
+
+/*------------------------------------------ order-cell --------------------------------------------------------------*/
+.order-cell{
+  color: $black;
+  h2{
+    color: $black;
+  }
+  .bg-order-cell{
+    background-image: url("/image/pages/index/Rectangle-31.webp");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    height: 350px;
+  }
+}
+
+/*--------------------------------------------------------------------------------------------------------------------*/
 .w-20{
   width: 20%;
 }
@@ -15,3 +32,9 @@
 .bottom-1rem{
   bottom: 1rem;
 }
+
+.section{
+  padding: 3rem 0;
+}
+
+

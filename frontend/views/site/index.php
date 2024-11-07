@@ -3,6 +3,9 @@
 /** @var yii\web\View $this */
 
 use frontend\components\View;
+use frontend\widgets\HelpWidget\OrderCellWidget;
+use frontend\widgets\MainFilterWidget\MainFilterWidget;
+use frontend\widgets\Offers\SeasonWidget;
 
 $this->title = 'My Yii Application';
 
@@ -14,12 +17,14 @@ JS, View::POS_END);
 
 ?>
 <div class="container-fluid">
-    <?= \frontend\widgets\MainFilterWidget\MainFilterWidget::widget([]) ?>
+    <?= MainFilterWidget::widget([]) ?>
 </div>
 
-<div class="container">
-    <?= \frontend\widgets\Offers\SeasonWidget::widget([]) ?>
-</div>
+
+<?= SeasonWidget::widget([]) ?>
+
+
+<?= OrderCellWidget::widget([]) ?>
 
 
 <div class="site-index container">
