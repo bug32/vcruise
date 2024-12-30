@@ -5,6 +5,7 @@
 use frontend\components\View;
 
 ?>
+<div class="container-fluid">
 <div class="section-main-filter position-relative">
     <div class="position-absolute w-100 bottom-1rem">
         <div class="container bg-light rounded-5 p-4">
@@ -60,4 +61,5 @@ use frontend\components\View;
 
         </div>
     </div>
+</div>
 </div>

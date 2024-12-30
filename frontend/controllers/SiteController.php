@@ -8,6 +8,8 @@ use frontend\models\VerifyEmailForm;
 use Yii;
 use yii\base\InvalidArgumentException;
 use yii\db\Exception;
+use yii\helpers\VarDumper;
+use yii\redis\Connection;
 use yii\web\BadRequestHttpException;
 use yii\web\Controller;
 use yii\filters\VerbFilter;
@@ -29,7 +31,7 @@ class SiteController extends Controller
     public function behaviors()
     {
         return [
-            'access' => [
+            /*'access' => [
                 'class' => AccessControl::class,
                 'only'  => ['logout', 'signup'],
                 'rules' => [
@@ -50,7 +52,7 @@ class SiteController extends Controller
                 'actions' => [
                     'logout' => ['post'],
                 ],
-            ],
+            ],*/
         ];
     }
 

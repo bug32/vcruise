@@ -1,10 +1,10 @@
 <?php
 
-namespace frontend\widgets\HelpWidget;
+namespace frontend\widgets\recommend;
 
 use yii\base\Widget;
 
-class OrderCellWidget extends Widget
+class MainRecommendWidget extends Widget
 {
 
     public function init():void
@@ -12,10 +12,12 @@ class OrderCellWidget extends Widget
         parent::init();
     }
 
-
     public function run():string
     {
-        return $this->render('order-cell',[]);
+
+        return $this->render('main-recommend', [
+
+        ]);
     }
 
 }

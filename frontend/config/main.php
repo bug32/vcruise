@@ -66,7 +66,7 @@ return [
         ],
         'session'      => [
             // this is the name of the session cookie used for login on the frontend
-            'name' => 'advanced-frontend',
+            'name' => 'cruise-frontend',
         ],
         'log'          => [
             'traceLevel' => YII_DEBUG ? 3 : 0,
@@ -98,6 +98,11 @@ return [
             ],
             'rules'               => [
                 '/' => 'site/index',
+                'login' => 'site/login',
+                '<controller:\w+>/<id:\d+>' => '<controller>/view',
+                '<controller:\w+>/<action:\w+>/<id:\d+>' => '<controller>/<action>',
+                '<controller:\w+>/<action:\w+>' => '<controller>/<action>',
+                    
             ],
         ],
 

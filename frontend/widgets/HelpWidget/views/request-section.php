@@ -5,8 +5,8 @@
 use frontend\components\View;
 
 ?>
-<div class="section order-cell">
-    <div class="container bg-order-cell">
+<div class="section request-section">
+    <div class="container bg-request-section">
         <div class="row justify-content-end align-items-center h-100">
         <div class="col-12 col-md-6 h-100 d-flex flex-column justify-content-center">
             <div class="head fw-500">

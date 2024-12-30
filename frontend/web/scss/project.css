@@ -21746,15 +21746,30 @@ img-comparison-slider:focus {
   height: 625px;
 }
 
-/*------------------------------------------ order-cell --------------------------------------------------------------*/
-.order-cell {
+/*------------------------------------------ request-section ---------------------------------------------------------*/
+.request-section {
   color: #464646;
 }
-.order-cell h2, .order-cell .h2 {
+.request-section h2, .request-section .h2 {
   color: #464646;
 }
-.order-cell .bg-order-cell {
-  background-image: url("/image/pages/index/Rectangle-31.webp");
+.request-section .bg-request-section {
+  background-image: url("/image/widgets/request/Rectangle-31.webp");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  height: 350px;
+}
+
+/*------------------------------------------ request-form ------------------------------------------------------------*/
+.request-form {
+  color: #464646;
+}
+.request-form h2, .request-form .h2 {
+  color: #464646;
+}
+.request-form .bg-request-form {
+  background-image: url("/image/widgets/request/bg-request-form.png");
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
