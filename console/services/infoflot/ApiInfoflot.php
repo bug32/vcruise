@@ -47,7 +47,9 @@ abstract class ApiInfoflot {
         $loadPath = Yii::getAlias('@frontend') . '/web/public/' . $dir;
 
         if (!file_exists($loadPath)) {
-            mkdir($loadPath, 0777, true);
+            if (!mkdir($loadPath, 0777, TRUE) && !is_dir($loadPath)) {
+                throw new \RuntimeException(sprintf('Directory "%s" was not created', $loadPath));
+            }
         }
 
         return $loadPath . '/';

@@ -26,7 +26,9 @@
     "ext-curl": "*",
     "ext-json": "*",
     "rmrevin/yii2-minify-view": "^2.0",
-    "yiisoft/yii2-redis": "~2.0.0"
+    "yiisoft/yii2-redis": "~2.0.0",
+    "ext-gd": "*",
+    "ext-imagick": "*"
   },
   "require-dev": {
     "yiisoft/yii2-debug": "~2.1.0",
