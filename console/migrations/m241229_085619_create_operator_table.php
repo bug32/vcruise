@@ -36,6 +36,13 @@ class m241229_085619_create_operator_table extends Migration
             'status'
         );
         $this->createIndex('idx_operator_slug-status', '{{%operator}}', ['slug', 'status'], TRUE);
+
+        $this->insert('{{%operator}}', [
+            'id' => 1,
+            'name' => 'Неизвестный',
+            'slug' => 'unknown',
+            'status' => 10
+        ]);
     }
 
     /**

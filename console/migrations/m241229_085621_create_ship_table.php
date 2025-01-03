@@ -22,7 +22,7 @@ class m241229_085621_create_ship_table extends Migration
 
             'stars' => $this->smallInteger(),
             'captain' => $this->string(),
-            'criuseDirector' => $this->string(),
+            'cruiseDirector' => $this->string(),
             'cruiseDirectorTel' => $this->string(),
             'restaurantDirector' => $this->string(),
 
@@ -36,14 +36,19 @@ class m241229_085621_create_ship_table extends Migration
             'length' => $this->string(),
             'width' => $this->string(),
             'passengers' => $this->integer(),
-            'decks' => $this->smallInteger(),
+            'decksTotal' => $this->smallInteger()->comment('Количество палуб'),
+            'cabinsTotal' => $this->smallInteger()->comment('Количество кают'),
 
             'additional' => $this->text()->comment('Дополнительно на борту'),
+            'include' => $this->text()->comment('Включено на борту'),
             'currency' => $this->string()->comment('Валюта на борту'),
             'video' => $this->string()->comment('Видео о корабле'),
             '3dtour' => $this->string()->comment('3D тур по караблю'),
 
             'scheme' => $this->string()->comment('Схема'),
+
+            'year' => $this->integer()->comment('Год выпуска'),
+            'yearRenovation' => $this->integer()->comment('Год ремонта'),
 
             'created_at' => $this->timestamp()->notNull()->defaultExpression(new \yii\db\Expression('NOW()')),
             'updated_at' => $this->timestamp()->notNull()->defaultExpression(new \yii\db\Expression('NOW()')),

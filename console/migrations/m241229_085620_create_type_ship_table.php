@@ -28,6 +28,14 @@ class m241229_085620_create_type_ship_table extends Migration
 
         $this->createIndex('idx_type_ship_slug-status', '{{%type_ship}}', ['slug', 'status'], TRUE);
         $this->createIndex('idx_type_ship_status', '{{%type_ship}}', 'status');
+
+        $this->insert('{{%type_ship}}', [
+            'id' => 1,
+            'name' => 'Не указано',
+            'slug' => 'not-specified',
+            'status' => 10,
+            'priority' => 0,
+        ]);
     }
 
     /**

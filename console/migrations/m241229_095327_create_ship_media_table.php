@@ -18,6 +18,7 @@ class m241229_095327_create_ship_media_table extends Migration
             'id' => $this->primaryKey(),
             'ship_id' => $this->integer(),
 
+            'alt' => $this->string(),
             'name' => $this->string()->notNull(),
             'key' => $this->string()->comment('Для объединения картинок в группы по ключу'),
 

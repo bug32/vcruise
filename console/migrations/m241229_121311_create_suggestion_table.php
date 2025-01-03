@@ -16,6 +16,7 @@ class m241229_121311_create_suggestion_table extends Migration
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),
             'slug' => $this->string()->notNull()->unique(),
+            'label' => $this->string()->comment('Название для отображения в интерфейсе'),
             'description' => $this->text(),
             'icon' => $this->string(),
 
