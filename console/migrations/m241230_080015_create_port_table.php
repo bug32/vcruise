@@ -16,7 +16,7 @@ class m241230_080015_create_port_table extends Migration
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),
             'slug' => $this->string()->notNull()->unique(),
-            'city_id' => $this->integer()->notNull(),
+            'city_id' => $this->integer()->notNull()->defaultValue(0),
             'description' => $this->text(),
             'address' => $this->string(),
 
@@ -26,6 +26,17 @@ class m241230_080015_create_port_table extends Migration
             'created_at' => $this->timestamp()->notNull()->defaultExpression(new \yii\db\Expression('NOW()')),
             'updated_at' => $this->timestamp()->notNull()->defaultExpression(new \yii\db\Expression('NOW()')),
         ]);
+
+        $this->addCommentOnTable('{{%port}}', 'Порты');
+
+        $this->addForeignKey('fk-port-city_id', '{{%port}}', 'city_id', '{{%city}}', 'id');
+
+        $this->insert('{{%port}}', [
+            'name' => 'Не указан',
+            'slug' => 'unknown',
+            'city_id' => 0
+        ]);
+
     }
 
     /**

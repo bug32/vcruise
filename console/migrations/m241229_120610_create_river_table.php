@@ -23,6 +23,12 @@ class m241229_120610_create_river_table extends Migration
         ]);
 
         $this->createIndex('idx_river_slug', '{{%river}}', 'slug');
+
+        $this->insert('{{%river}}', [
+            'id' => 0,
+            'name' => 'Не указано',
+            'slug' => 'not-specified',
+        ]);
     }
 
     /**

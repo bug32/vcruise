@@ -72,7 +72,10 @@ class InfoflotAPI
     {
         // TODO Переделать выборку! shipId - это наш id.
         $providerDeck = Yii::$app->db->createCommand(
-            'SELECT * FROM provider_deck WHERE ship_id = :ship_id AND provider_name = :provider_name',
+            'SELECT provider_deck.* 
+                 FROM provider_deck
+                 left join deck on provider_deck.internal_id = deck.id
+                 WHERE deck.ship_id = :ship_id AND provider_name = :provider_name',
             [
                 ':provider_name' => self::PROVIDER_NAME,
                 ':ship_id'       => $shipId
@@ -85,7 +88,10 @@ class InfoflotAPI
     protected function getProviderCabin(int|string $shipId): array
     {
         $providerCabin = Yii::$app->db->createCommand(
-            'SELECT * FROM provider_cabin WHERE ship_id = :ship_id AND provider_name = :provider_name',
+            'SELECT provider_cabin.* 
+                    FROM provider_cabin
+                    left join cabin on provider_cabin.internal_id = cabin.id
+                    WHERE cabin.ship_id = :ship_id AND provider_name = :provider_name',
             [
                 ':provider_name' => self::PROVIDER_NAME,
                 ':ship_id'       => $shipId
@@ -95,13 +101,12 @@ class InfoflotAPI
         return ArrayHelper::index($providerCabin, 'foreign_id');
     }
 
-    protected function getProviderCabinType( $shipId): array
+    protected function getProviderCabinType(): array
     {
         $providerCabin = Yii::$app->db->createCommand(
-            'SELECT * FROM provider_cabin_type WHERE ship_id = :ship_id AND provider_name = :provider_name',
+            'SELECT * FROM provider_cabin_type WHERE provider_name = :provider_name',
             [
                 ':provider_name' => self::PROVIDER_NAME,
-                ':ship_id'       => $shipId
             ]
         )->queryAll();
 

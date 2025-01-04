@@ -62,7 +62,7 @@ class ShipParser extends InfoflotAPI
                 }
 
                 $ship = $this->request('/ships/' . $item['id']);
-
+print_r($ship); die();
                 try {
                     // Берем внутренний id из таблицы поставщиков информации о кораблях
                     // если информации нет, то корабль новый
@@ -127,7 +127,7 @@ class ShipParser extends InfoflotAPI
                     //$this->includeOnboard($ship);          //
                     $this->includeSug($ship);              //
                     $this->saveDeck($ship['decks'], $internalId);
-                    $this->saveCabinType($ship['cabinTypes']);
+                    $this->saveCabinType($ship['cabinTypes'], $internalId);
                     $this->saveCabins($ship['cabins'], $internalId);
 
                     echo "Create ShipID " . $ship['id'] . PHP_EOL;
@@ -301,8 +301,6 @@ class ShipParser extends InfoflotAPI
             ];
             Yii::$app->db->createCommand()->insert('provider_deck', $params)->execute();
         }
-
-
     }
 
     protected function saveCabins(mixed $cabins, $shipId): void
@@ -334,6 +332,54 @@ class ShipParser extends InfoflotAPI
                 'internal_id'   => $model->id,
             ];
             Yii::$app->db->createCommand()->insert('provider_cabin', $params)->execute();
+        }
+    }
+
+    protected function saveCabinType(mixed $cabinTypes, int|string|null $internalId): void
+    {
+        $providerCabinType = $this->getProviderCabinType();
+        foreach ($cabinTypes as $cabinType) {
+            if (empty($providerCabinType[$cabinType['id']])) {
+                $params = [
+                    'provider_name' => self::PROVIDER_NAME,
+                    'foreign_id'    => $cabinType['id'],
+                    'internal_id'   => $internalId,
+                ];
+                Yii::$app->db->createCommand()->insert('provider_cabin_type', $params)->execute();
+
+                $providerCabinType = $this->getProviderCabinType();
+            }
+
+            $params = [
+                'name'        => $cabinType['name'],
+                'ship_id'     => $internalId,
+                'description' => $cabinType['description'],
+                'priority'    => $cabinType['position'],
+                'isEco'       => $cabinType['isEko'],
+            ];
+            Yii::$app->db->createCommand()->insert('cabin_type', $params)->execute();
+            $id = Yii::$app->db->getLastInsertID();
+
+            // Сожранение картинок кают
+            foreach ($cabinType['photos'] as $photo) {
+                $params = [
+                    'cabin_type_id' => $id,
+                    'url'           => $this->saveFile($photo['url'], 'ship/' . $internalId . '/cabin-type')
+                ];
+
+                Yii::$app->db->createCommand()->insert('cabin_type_photo', $params)->execute();
+            }
+
+            // Сохранение услуг
+            // 'inRoomServices' -> onboard-services
+            $services = explode(',', $cabinType['inRoomServices']);
+            foreach ($services as $service) {
+                $params = [
+                    'cabin_type_id' => $id,
+                    'service_id'    => $service,
+                ];
+                Yii::$app->db->createCommand()->insert('cabin_type_service', $params)->execute();
+            }
         }
     }
 

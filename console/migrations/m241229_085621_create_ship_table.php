@@ -17,8 +17,8 @@ class m241229_085621_create_ship_table extends Migration
             'name' => $this->string()->notNull(),
             'slug' => $this->string()->notNull()->unique(),
 
-            'typeId' => $this->integer()->notNull()->comment('Типкорабля'),
-            'operatorId' => $this->integer()->notNull()->comment('Судовладелец'),
+            'typeId' => $this->integer()->defaultValue(0)->comment('Типкорабля'),
+            'operatorId' => $this->integer()->defaultValue(0)->comment('Судовладелец'),
 
             'stars' => $this->smallInteger(),
             'captain' => $this->string(),
@@ -30,8 +30,8 @@ class m241229_085621_create_ship_table extends Migration
             'descriptionBig' => $this->text(),
             'discounts' => $this->text(),
 
-            'status' => $this->smallInteger()->notNull()->defaultValue(10),
-            'priority' => $this->integer()->notNull()->defaultValue(0),
+            'status' => $this->smallInteger()->defaultValue(10),
+            'priority' => $this->integer()->defaultValue(0),
 
             'length' => $this->string(),
             'width' => $this->string(),

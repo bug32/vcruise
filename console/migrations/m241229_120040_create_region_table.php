@@ -22,6 +22,13 @@ class m241229_120040_create_region_table extends Migration
             'created_at' => $this->timestamp()->notNull()->defaultExpression(new \yii\db\Expression('NOW()')),
             'updated_at' => $this->timestamp()->notNull()->defaultExpression(new \yii\db\Expression('NOW()')),
         ]);
+
+        $this->addCommentOnTable('{{%region}}', 'Регионы');
+
+        $this->insert('{{%region}}', [
+            'name' => 'Не указан',
+            'slug' => 'not-specified',
+        ]);
     }
 
     /**
