@@ -2,17 +2,16 @@
 
 namespace console\services\providers\infoflot\parsers;
 
-use common\models\ShipMedia;
 use console\models\Cabin;
+use console\models\CabinType;
 use console\models\Deck;
+use console\models\ProviderCombination;
 use console\models\Ship;
 use console\models\Suggestion;
 use console\services\providers\infoflot\InfoflotAPI;
 use Random\RandomException;
 use Yii;
 use yii\db\Exception;
-use yii\helpers\ArrayHelper;
-use yii\helpers\HtmlPurifier;
 use yii\helpers\Inflector;
 
 class ShipParser extends InfoflotAPI
@@ -22,7 +21,6 @@ class ShipParser extends InfoflotAPI
     /**
      * @var string Название таблицы для связи id провайдера и id модели в нутри системы
      */
-    protected string $tableRelation = 'provider_ship';
 
     protected array $suggests = [];
 
@@ -37,18 +35,21 @@ class ShipParser extends InfoflotAPI
     /**
      * @throws \JsonException
      * @throws RandomException
+     * @throws Exception
      */
     public function run(): bool
     {
 
         set_time_limit(0);
 
-        $nextPage = '/ships?key=' . self::TOKEN;
+        $nextPage = '/ships';
+        $page     = 33;
 
         while ($nextPage) {
-            $list = $this->request($nextPage);
+            $list = $this->request('/ships', ['limit' => 3, 'page' => $page]);
+            $page++;
 
-            $nextPage = !empty($list['pagination']['pages']['next']['url']) ? (self::BASE_URL . $list['pagination']['pages']['next']['url']) : NULL;
+            $nextPage = $list['pagination']['pages']['next']['url'] ?? NULL;
 
             if (empty($list['data'])) {
                 echo 'data empty!';
@@ -62,26 +63,35 @@ class ShipParser extends InfoflotAPI
                 }
 
                 $ship = $this->request('/ships/' . $item['id']);
-print_r($ship); die();
+
                 try {
                     // Берем внутренний id из таблицы поставщиков информации о кораблях
                     // если информации нет, то корабль новый
                     $internalId = $this->getInternalId($item['id']);
+                    if (!$internalId) {
+                        $internalId = Ship::createEmpty();
+                        $isNewShip  = TRUE;
+                        echo 'new ship: ' . $item['id'] . PHP_EOL;
+                    }
                 } catch (Exception $e) {
-                    $internalId = Ship::createEmpty();
-                    $isNewShip  = TRUE;
+                    echo $e->getMessage() . PHP_EOL;
+                    continue;
                 }
+
 
                 try {
                     $cabinsTotal = !empty($ship['cabins']) ? count($ship['cabins']) : 0;
                     $deckTotal   = !empty($ship['decks']) ? count($ship['decks']) : 0;
 
+                    $operatorId = $this->getOperatorId($ship);
+                    $shipTypeId = $this->getShipTypeId($ship);
+
                     $params = [
                         'id'                 => $internalId,
                         'name'               => trim($ship['name']),
                         'slug'               => trim($ship['url']),
-                        'typeId'             => 'Type ID',
-                        'operatorId'         => 'Operator ID',
+                        'typeId'             => $shipTypeId,
+                        'operatorId'         => $operatorId,
                         'stars'              => $ship['stars'] ?? 0,
                         'captain'            => trim($ship['captain']),
                         'cruiseDirector'     => trim($ship['criuseDirector']),
@@ -102,7 +112,7 @@ print_r($ship); die();
                         'currency'           => 1, // 1 - рубли, 2 - доллары, 3 - евро
                         'video'              => $ship['video'],
                         '3dtour'             => $ship['3dtour'],
-                        'scheme'             => $this->saveScheme($ship, 'ships/' . $internalId),
+                        'scheme'             => $this->saveScheme($ship, $internalId),
 
                         'year'           => '',
                         'yearRenovation' => '',
@@ -121,18 +131,30 @@ print_r($ship); die();
                     Yii::$app->db->createCommand()->update(Ship::tableName(), $params, ['id' => $internalId])->execute();
 
                     if ($isNewShip) {
+                        Yii::$app->db->createCommand()->insert('provider_combination',
+                            [
+                                'provider_name' => self::PROVIDER_NAME,
+                                'foreign_id'    => $item['id'],
+                                'internal_id'   => $internalId,
+                                'model_name'    => self::PROVIDER_MODEL_NAME_SHIP
+                            ])->execute();
                         $this->savePhotos($ship, $internalId); // загрузка фото корабля
                     }
 
                     //$this->includeOnboard($ship);          //
-                    $this->includeSug($ship);              //
-                    $this->saveDeck($ship['decks'], $internalId);
+                    $this->includeSug($ship, $internalId);              //
+                    $this->saveDeck($ship, $internalId);
                     $this->saveCabinType($ship['cabinTypes'], $internalId);
                     $this->saveCabins($ship['cabins'], $internalId);
 
                     echo "Create ShipID " . $ship['id'] . PHP_EOL;
                 } catch (Exception $e) {
-                    Ship::deleteAll(['id' => $internalId]);
+                    Ship::deleteId($internalId);
+                    ProviderCombination::deleteAll([
+                        'provider_name' => self::PROVIDER_NAME,
+                        'foreign_id'    => $item['id'],
+                        'model_name'    => self::PROVIDER_MODEL_NAME_SHIP
+                    ]);
                     echo("ShipID {$item['id']} Error insert" . $e->getMessage());
                     die();
                 }
@@ -161,10 +183,12 @@ print_r($ship); die();
     protected function getInternalId($id): ?string
     {
         $result = Yii::$app->db->createCommand(
-            'SELECT internal_id FROM ' . $this->tableRelation . ' WHERE provider_name = :provider_name AND foreign_id = :foreign_id',
+            'SELECT internal_id FROM provider_combination 
+            WHERE provider_name = :provider_name AND foreign_id = :foreign_id AND model_name = :model_name',
             [
                 ':provider_name' => self::PROVIDER_NAME,
-                ':foreign_id'    => $id
+                ':foreign_id'    => $id,
+                ':model_name'    => self::PROVIDER_MODEL_NAME_SHIP,
             ]
         )->queryOne();
 
@@ -191,11 +215,11 @@ print_r($ship); die();
     protected function saveScheme($file, $shipID): string
     {
         if (!empty($file['svgScheme']['url'])) {
-            return $this->saveFile($file['svgScheme']['url'], $shipID . '/scheme');
+            return $this->saveFile($file['svgScheme']['url'], 'ships/' . $shipID . '/scheme');
         }
 
         if (!empty($file['files']['scheme']['path'])) {
-            return $this->saveFile($file['files']['scheme']['path'], $shipID . '/scheme');
+            return $this->saveFile($file['files']['scheme']['path'], 'ships/' . $shipID . '/scheme');
         }
 
         return '';
@@ -213,7 +237,7 @@ print_r($ship); die();
 
         foreach ($ship['photos'] as $photo) {
 
-            $file = pathinfo($photo['filename']);
+            //   $file = pathinfo($photo['filename']);
 
             $photoPath = $this->saveFile($photo['filename'], 'ships/' . $internalId . '/gallery');
             if (!$photoPath) {
@@ -221,15 +245,16 @@ print_r($ship); die();
             }
 
             $params = [
-                'alt'      => trim($photo['description']),
-                'path'     => $photoPath,
-                'position' => $photo['position'],
-                'type'     => $photo['filetype'],
-                'size'     => $photo['filesize'],
-                'ship_id'  => $internalId,
+                'alt'       => trim($photo['description']) ?? trim($ship['name']),
+                'name'      => trim($photo['description']) ?? trim($ship['name']),
+                'url'       => $photoPath,
+                'priority'  => $photo['position'],
+                'mime_type' => $photo['filetype'],
+                'size'      => $photo['filesize'],
+                'ship_id'   => $internalId,
             ];
 
-            Yii::$app->db->createCommand()->insert('ship_photo', $params)->execute();
+            Yii::$app->db->createCommand()->insert('ship_media', $params)->execute();
         }
         return;
     }
@@ -238,30 +263,44 @@ print_r($ship); die();
     /**
      * @throws Exception
      */
-    public function includeSug($item, $shipId): void
+    public function includeSug($ship, $shipId): void
     {
-        if (empty($item['sug'])) {
+        if (empty($ship['sug'])) {
             return;
         }
-
-        foreach ($item['sug'] as $sug) {
-            if (empty($this->suggests[$sug['type_name']])) {
+        $this->suggests = $this->getSuggests();
+        foreach ($ship['sug'] as $sug) {
+            $title = $this->clearText($sug['title']);
+            if (empty($this->suggests[$title])) {
                 $params = [
-                    'name'        => $sug['title'],
-                    'label'       => $sug['label'],
-                    'slug'        => Inflector::slug($sug['title']),
+                    'name'        => $title,
+                    'label'       => trim($sug['label']),
+                    'slug'        => Inflector::slug($title),
                     'icon'        => $this->saveFile($sug['icon'], 'suggest'),
-                    'description' => strip_tags($sug['descr']),
+                    'description' => $this->clearText(strip_tags($sug['descr'])),
                 ];
 
                 Yii::$app->db->createCommand()->insert('suggestion', $params)->execute();
                 $this->suggests = $this->getSuggests();
             }
 
+            $suggest_id = $this->suggests[$title];
+
+            $temp = Yii::$app->db->createCommand(
+                'SELECT * FROM suggestion_ship_relation WHERE suggestion_id = :suggestion_id AND ship_id = :ship_id',
+                [
+                    ':suggestion_id' => $suggest_id,
+                    ':ship_id'       => $shipId
+                ]
+            )->queryOne();
+            if ($temp) {
+                continue;
+            }
+
             $params = [
-                'suggest_id' => $this->suggests[$sug['type_name']],
-                'ship_id'    => $shipId,
-                'priority'   => $sug['type_priority'],
+                'suggestion_id' => $suggest_id,
+                'ship_id'       => $shipId,
+                'priority'      => $sug['type_priority'],
             ];
             Yii::$app->db->createCommand()->insert('suggestion_ship_relation', $params)->execute();
         }
@@ -272,18 +311,26 @@ print_r($ship); die();
         return Suggestion::find()->select('id')->indexBy('name')->asArray()->column();
     }
 
-    protected function saveDeck(mixed $decks, int|string|null $shipId): void
+    protected function saveDeck(mixed $ship, int|string|null $shipId): void
     {
-        $providerDeck = $this->getProviderDeck($shipId);
+        if (empty($ship['decks'])) {
+            return;
+        }
+        $decks = $ship['decks'];
+
+        $providerDeck = $this->getProviderDeck();
         foreach ($decks as $deck) {
             if (!empty($providerDeck[$deck['id']])) {
                 continue;
             }
 
-            $params = [
-                'name'     => $deck['name'],
+            $deckName = trim($deck['name']) ;
+            if(empty($deckName)){
+                $deckName = 'Палуба ' . $deck['position'];
+            }
+            $params   = [
+                'name'     => $deckName,
                 'priority' => $deck['position'],
-                'slug'     => Inflector::slug($deck['name']),
                 'ship_id'  => $shipId,
                 'status'   => 10,
             ];
@@ -291,31 +338,43 @@ print_r($ship); die();
             $model = new Deck();
             $model->setAttributes($params);
             if (!$model->save()) {
+                echo 'Deck Error '.$deckName;
+                print_r($deck);
+                print_r($model->getErrors());
+                print_r($model->getAttributes());
+                die();
                 continue;
             }
+            echo "Add deckID: " . $model->id . PHP_EOL;
 
-            $params = [
-                'provider_name' => self::PROVIDER_NAME,
-                'foreign_id'    => $deck['id'],
-                'internal_id'   => $model->id,
-            ];
-            Yii::$app->db->createCommand()->insert('provider_deck', $params)->execute();
+
+            $this->setProviderDeck($deck['id'], $model->id);
+            $providerDeck[$deck['id']] = $model->id;
+
         }
     }
 
     protected function saveCabins(mixed $cabins, $shipId): void
     {
-        $providerCabin = $this->getProviderCabin($shipId);
+        $providerCabin     = $this->getProviderCabin($shipId);
+        $providerCabinType = $this->getProviderCabinType($shipId);
+        $providerDeck      = $this->getProviderDeck();
         foreach ($cabins as $cabin) {
             if (!empty($providerCabin[$cabin['id']])) {
                 continue;
             }
 
+            $cabinName = trim($cabin['name']);
+            if(empty($cabinName)){
+                $cabinName = 'Кабина ' . $cabin['typeFriendlyName'];
+            }
+
             $params = [
-                'name'             => $cabin['name'],
-                'deck_id'          => $cabin['deck_id'],
+                'name'             => $cabinName,
+                'deck_id'          => $providerDeck[$cabin['deckId']]['internal_id'],
                 'ship_id'          => $shipId,
-                'cabin_type_id'    => '',
+                'cabin_type_id'    => $providerCabinType[$cabin['typeId']]['internal_id'],
+                'description'      => $cabin['cabinDescription'],
                 'places'           => $cabin['places']['main'] ?? 0,
                 'additionalPlaces' => $cabin['places']['additional'] ?? 0,
             ];
@@ -323,64 +382,142 @@ print_r($ship); die();
             $model = new Cabin();
             $model->setAttributes($params);
             if (!$model->save()) {
+                print_r($cabin);
+                print_r($providerDeck[$cabin['deckId']]);
+                print_r($model->getErrors());
+                die();
                 continue;
             }
 
-            $params = [
-                'provider_name' => self::PROVIDER_NAME,
-                'foreign_id'    => $cabin['id'],
-                'internal_id'   => $model->id,
-            ];
-            Yii::$app->db->createCommand()->insert('provider_cabin', $params)->execute();
+            $this->setProviderCabin($cabin['id'], $model->id);
+            $providerCabin[$cabin['id']] = $model->id;
         }
     }
 
-    protected function saveCabinType(mixed $cabinTypes, int|string|null $internalId): void
+    protected function saveCabinType(mixed $cabinTypes, string $shipId): void
     {
-        $providerCabinType = $this->getProviderCabinType();
+        $providerCabinType = $this->getProviderCabinType($shipId);
         foreach ($cabinTypes as $cabinType) {
             if (empty($providerCabinType[$cabinType['id']])) {
+
+                $params = [
+                    'name'        => $cabinType['name'],
+                    'ship_id'     => $shipId,
+                    'description' => $cabinType['description'],
+                    'priority'    => $cabinType['position'],
+                    'isEco'       => $cabinType['isEko'],
+                ];
+
+                $model = new CabinType();
+                $model->setAttributes($params);
+                if (!$model->save()) {
+                    print_r($model->getErrors());
+                    continue;
+                }
+
                 $params = [
                     'provider_name' => self::PROVIDER_NAME,
                     'foreign_id'    => $cabinType['id'],
-                    'internal_id'   => $internalId,
+                    'internal_id'   => $model->id,
+                    'model_name'    => self::PROVIDER_MODEL_NAME_CABIN_TYPE
                 ];
-                Yii::$app->db->createCommand()->insert('provider_cabin_type', $params)->execute();
+                Yii::$app->db->createCommand()->insert('provider_combination', $params)->execute();
 
-                $providerCabinType = $this->getProviderCabinType();
+                $providerCabinType = $this->getProviderCabinType($shipId);
+            } else {
+                continue;
             }
 
-            $params = [
-                'name'        => $cabinType['name'],
-                'ship_id'     => $internalId,
-                'description' => $cabinType['description'],
-                'priority'    => $cabinType['position'],
-                'isEco'       => $cabinType['isEko'],
-            ];
-            Yii::$app->db->createCommand()->insert('cabin_type', $params)->execute();
-            $id = Yii::$app->db->getLastInsertID();
 
             // Сожранение картинок кают
             foreach ($cabinType['photos'] as $photo) {
-                $params = [
-                    'cabin_type_id' => $id,
-                    'url'           => $this->saveFile($photo['url'], 'ship/' . $internalId . '/cabin-type')
-                ];
+                try {
+                    $params = [
+                        'cabin_type_id' => $model->id,
+                        'url'           => $this->saveFile($photo, 'ships/' . $shipId . '/cabin-type')
+                    ];
+                } catch (\Throwable $e) {
+                    echo $e->getMessage() . PHP_EOL;
+                    print_r($photo);
+                    echo $shipId . PHP_EOL;
+                    continue;
+                }
 
-                Yii::$app->db->createCommand()->insert('cabin_type_photo', $params)->execute();
+                Yii::$app->db->createCommand()->insert('cabin_type_media', $params)->execute();
             }
 
             // Сохранение услуг
             // 'inRoomServices' -> onboard-services
             $services = explode(',', $cabinType['inRoomServices']);
+            $services = array_filter($services);
             foreach ($services as $service) {
-                $params = [
-                    'cabin_type_id' => $id,
-                    'service_id'    => $service,
-                ];
-                Yii::$app->db->createCommand()->insert('cabin_type_service', $params)->execute();
+                try {
+                    $params = [
+                        'cabin_type_id' => $model->id,
+                        'service_id'    => $service,
+                    ];
+                    Yii::$app->db->createCommand()->insert('cabin_type_service_relation', $params)->execute();
+                } catch (\Throwable $e) {
+                    echo $e->getMessage() . PHP_EOL;
+                }
             }
         }
+    }
+
+    protected function getOperatorId(array $ship)
+    {
+        $operator = $this->clearText($ship['operatorName']);
+
+        $temp = Yii::$app->db->createCommand('Select id from operator where name = :name',
+            [
+                ':name' => $operator
+            ])->queryOne();
+
+        if (!empty($temp['id'])) {
+            return $temp['id'];
+        }
+
+        Yii::$app->db->createCommand()->insert('operator', [
+            'name'   => $operator,
+            'slug'   => Inflector::slug($operator),
+            'status' => 10
+        ])->execute();
+
+
+        $temp = Yii::$app->db->createCommand('Select id from operator where name = :name',
+            [
+                ':name' => $operator
+            ])->queryOne();
+
+        return $temp['id'];
+    }
+
+    protected function getShipTypeId(array $ship)
+    {
+        $type = $this->clearText($ship['typeName']);
+
+        $temp = Yii::$app->db->createCommand('Select id from type_ship where name = :name',
+            [
+                ':name' => $type
+            ])->queryOne();
+
+        if (!empty($temp['id'])) {
+            return $temp['id'];
+        }
+
+        Yii::$app->db->createCommand()->insert('type_ship', [
+            'name'   => $type,
+            'slug'   => Inflector::slug($type),
+            'status' => 10
+        ])->execute();
+
+
+        $temp = Yii::$app->db->createCommand('Select id from type_ship where name = :name',
+            [
+                ':name' => $type
+            ])->queryOne();
+
+        return $temp['id'];
     }
 
 

@@ -23,6 +23,7 @@ class m241230_080833_create_cruise_table extends Migration
             'additional' => $this->text()->comment('Дополнительно'),
             'discounts' => $this->text()->comment('Скидки'),
             'map' => $this->string()->comment('ссылка на карту маршрута'),
+            'status' => $this->smallInteger()->defaultValue(10),
 
             'date_start' => $this->date()->notNull(),
             'date_end' => $this->date()->notNull(),

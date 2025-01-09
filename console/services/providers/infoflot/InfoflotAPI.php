@@ -13,11 +13,20 @@ use yii\web\UrlNormalizer;
 class InfoflotAPI
 {
     public const PROVIDER_NAME = 'infoflot';
-    public const BASE_URL      = 'https://restapi.infoflot.com';
-    public const TOKEN         = "ddf71b33662078a069d2a1eacafefb33cc783bf6";
-    public const PAGE_LIMIT    = 50;
 
-    public const URN_SHIP = '/ships';
+    public const               PROVIDER_MODEL_NAME_SHIP       = 'ship';
+    public const               PROVIDER_MODEL_NAME_DECK       = 'deck';
+    public const               PROVIDER_MODEL_NAME_CABIN      = 'cabin';
+    public const               PROVIDER_MODEL_NAME_CABIN_TYPE = 'cabin_type';
+    public const               PROVIDER_MODEL_NAME_CRUISE     = 'cruise';
+    public const               PROVIDER_MODEL_NAME_PORT       = 'port';
+    public const               PROVIDER_MODEL_NAME_CITY       = 'city';
+    public const               BASE_URL                       = 'https://restapi.infoflot.com';
+    public const               TOKEN                          = "ddf71b33662078a069d2a1eacafefb33cc783bf6";
+    public const               PAGE_LIMIT                     = 50;
+
+    public const        URN_SHIP = '/ships';
+
 
     protected $_ships = [];
 
@@ -43,18 +52,34 @@ class InfoflotAPI
         $normalize = new UrlNormalizer();
         $url       = $normalize->normalizePathInfo($url, '');
 
+        echo $url . '?' . http_build_query($params) . "\n";
+
         $ch = curl_init($url . '?' . http_build_query($params));
 
         curl_setopt($ch, CURLOPT_AUTOREFERER, TRUE);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
 
         $data = curl_exec($ch);
         curl_close($ch);
 
         return json_decode($data, TRUE, 512, JSON_THROW_ON_ERROR);
+    }
+
+    public function getServices(): array
+    {
+        return $this->request('/onboard-services');
+    }
+
+    protected function getRivers(): array
+    {
+        return $this->request('/rivers');
+    }
+
+    protected function getCities(): array
+    {
+        return $this->request('/cities');
     }
 
     /**
@@ -68,47 +93,95 @@ class InfoflotAPI
         return [];
     }
 
-    protected function getProviderDeck(int|string $shipId): array
+    /**
+     * @throws \yii\db\Exception
+     */
+    protected function getProviderDeck()
     {
-        // TODO Переделать выборку! shipId - это наш id.
+
+        $sql = "SELECT provider_combination.* 
+            FROM provider_combination 
+            WHERE provider_combination.provider_name = :provider_name AND provider_combination.model_name = :model_name";
+
         $providerDeck = Yii::$app->db->createCommand(
-            'SELECT provider_deck.* 
-                 FROM provider_deck
-                 left join deck on provider_deck.internal_id = deck.id
-                 WHERE deck.ship_id = :ship_id AND provider_name = :provider_name',
+            $sql,
             [
                 ':provider_name' => self::PROVIDER_NAME,
-                ':ship_id'       => $shipId
+                ':model_name'    => self::PROVIDER_MODEL_NAME_DECK
             ]
         )->queryAll();
+
+        if (empty($providerDeck)) {
+            return [];
+        }
 
         return ArrayHelper::index($providerDeck, 'foreign_id');
     }
 
+    protected function setProviderDeck($foreignId, $internalId): void
+    {
+        Yii::$app->db->createCommand()->insert('provider_combination', [
+            'provider_name' => self::PROVIDER_NAME,
+            'foreign_id'    => $foreignId,
+            'internal_id'   => $internalId,
+            'model_name'    => self::PROVIDER_MODEL_NAME_DECK
+        ])->execute();
+    }
+
+    /**
+     * @throws \yii\db\Exception
+     */
     protected function getProviderCabin(int|string $shipId): array
     {
+        $sql = "SELECT provider_combination.* 
+            FROM provider_combination 
+            LEFT JOIN cabin ON cabin.ship_id = provider_combination.internal_id
+            WHERE cabin.ship_id = :id AND provider_combination.provider_name = :provider_name AND provider_combination.model_name = :model_name";
+
         $providerCabin = Yii::$app->db->createCommand(
-            'SELECT provider_cabin.* 
-                    FROM provider_cabin
-                    left join cabin on provider_cabin.internal_id = cabin.id
-                    WHERE cabin.ship_id = :ship_id AND provider_name = :provider_name',
+            $sql,
             [
+                ':id'            => $shipId,
                 ':provider_name' => self::PROVIDER_NAME,
-                ':ship_id'       => $shipId
+                ':model_name'    => self::PROVIDER_MODEL_NAME_CABIN
             ]
         )->queryAll();
+
+        if (empty($providerCabin)) {
+            return [];
+        }
 
         return ArrayHelper::index($providerCabin, 'foreign_id');
     }
 
-    protected function getProviderCabinType(): array
+    protected function setProviderCabin(mixed $foreignId, int $internalId): void
     {
+        Yii::$app->db->createCommand()->insert('provider_combination', [
+            'provider_name' => self::PROVIDER_NAME,
+            'foreign_id'    => $foreignId,
+            'internal_id'   => $internalId,
+            'model_name'    => self::PROVIDER_MODEL_NAME_CABIN
+        ])->execute();
+    }
+
+    protected function getProviderCabinType($shipId): array
+    {
+        $sql = "SELECT provider_combination.* 
+            FROM provider_combination 
+            WHERE provider_combination.provider_name = :provider_name AND 
+                  provider_combination.model_name = :model_name";
+
         $providerCabin = Yii::$app->db->createCommand(
-            'SELECT * FROM provider_cabin_type WHERE provider_name = :provider_name',
+            $sql,
             [
                 ':provider_name' => self::PROVIDER_NAME,
+                ':model_name'    => self::PROVIDER_MODEL_NAME_CABIN_TYPE
             ]
         )->queryAll();
+
+        if (empty($providerCabin)) {
+            return [];
+        }
 
         return ArrayHelper::index($providerCabin, 'foreign_id');
     }
@@ -124,7 +197,7 @@ class InfoflotAPI
     protected function getLoadPath(string $dir): string
     {
         // $loadPath = Yii::getAlias('@frontend') . '/web/public/' . $dir;
-        $loadPath = Yii::getAlias('@staticPublic') . $dir;
+        $loadPath = Yii::getAlias('@staticPublic') . '/' . $dir;
 
         if (FileHelper::createDirectory($loadPath)) {
             return $loadPath . '/';
@@ -152,19 +225,19 @@ class InfoflotAPI
         if (empty($file)) {
             return '';
         }
-
+        $fileInfo = [];
         try {
             $absolutePath = $this->getLoadPath($path);
 
-            $filesInfo = pathinfo($file);
+            $fileInfo = pathinfo($file);
 
-            $fileName = md5($filesInfo['filename']) . '.' . $filesInfo['extension'];
+            $fileName = md5($fileInfo['filename']) . '.' . $fileInfo['extension'];
 
             copy($file, $absolutePath . $fileName);
 
             return '/public/' . $path . '/' . $fileName;
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             return '';
         }
     }
@@ -174,7 +247,7 @@ class InfoflotAPI
         if (empty($text)) {
             return '';
         }
-        return str_replace(['&nbsp;', '\n', PHP_EOL], '', $text);
+        return str_replace(['&nbsp;', ' ', '\n', PHP_EOL], [' ', ' ', '', ''], trim($text));
     }
 
 }

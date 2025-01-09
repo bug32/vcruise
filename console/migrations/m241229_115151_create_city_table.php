@@ -35,6 +35,7 @@ class m241229_115151_create_city_table extends Migration
         $this->createIndex('idx_city_slug', '{{%city}}', 'slug');
 
         $this->insert('{{%city}}', [
+            'id' => 0,
             'name' => 'Не указан',
             'slug' => 'not-specified',
             'country_id' => 0

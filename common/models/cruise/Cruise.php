@@ -2,7 +2,16 @@
 
 namespace common\models\cruise;
 
+use common\models\City;
+use common\models\PopularRoute;
+use common\models\Port;
+use common\models\Region;
+use common\models\River;
+use common\models\Ship;
+use common\models\Suggestion;
 use Yii;
+use yii\base\InvalidConfigException;
+use yii\db\ActiveQuery;
 
 /**
  * This is the model class for table "cruise".
@@ -33,6 +42,7 @@ use Yii;
  * @property string|null $dock_start
  * @property int $city_start_id
  * @property int $city_end_id
+ * @property int $status
  * @property string|null $cabins_json Свободные каюты
  * @property string|null $timetable_json Расписание
  * @property string $created_at
@@ -40,10 +50,12 @@ use Yii;
  *
  * @property City $cityEnd
  * @property City $cityStart
- * @property CruisePopularRouteRelation[] $cruisePopularRouteRelations
- * @property CruiseRegionRelation[] $cruiseRegionRelations
- * @property CruiseRiverRelation[] $cruiseRiverRelations
- * @property CruiseSuggestionRelation[] $cruiseSuggestionRelations
+
+  @property CruisePopularRouteRelation[] $cruisePopularRouteRelations
+  @property CruiseRegionRelation[] $cruiseRegionRelations
+  @property CruiseRiverRelation[] $cruiseRiverRelations
+  @property CruiseSuggestionRelation[] $cruiseSuggestionRelations
+
  * @property PopularRoute[] $popularRoutes
  * @property Port $portEnd
  * @property Port $portStart
@@ -75,6 +87,7 @@ class Cruise extends \yii\db\ActiveRecord
             [['date_start_timestamp', 'date_end_timestamp', 'days', 'nights', 'min_price', 'max_price', 'free_cabins', 'ship_id', 'port_start_id', 'port_end_id', 'city_start_id', 'city_end_id'], 'integer'],
             [['name', 'slug', 'route_short', 'map', 'currency', 'dock_start'], 'string', 'max' => 255],
             [['slug'], 'unique'],
+            ['status', 'default', 'value' => 10],
             [['city_start_id'], 'exist', 'skipOnError' => true, 'targetClass' => City::class, 'targetAttribute' => ['city_start_id' => 'id']],
             [['city_end_id'], 'exist', 'skipOnError' => true, 'targetClass' => City::class, 'targetAttribute' => ['city_end_id' => 'id']],
             [['port_start_id'], 'exist', 'skipOnError' => true, 'targetClass' => Port::class, 'targetAttribute' => ['port_start_id' => 'id']],
@@ -125,9 +138,9 @@ class Cruise extends \yii\db\ActiveRecord
     /**
      * Gets query for [[CityEnd]].
      *
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
      */
-    public function getCityEnd()
+    public function getCityEnd(): ActiveQuery
     {
         return $this->hasOne(City::class, ['id' => 'city_end_id']);
     }
@@ -135,59 +148,45 @@ class Cruise extends \yii\db\ActiveRecord
     /**
      * Gets query for [[CityStart]].
      *
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
      */
-    public function getCityStart()
+    public function getCityStart(): ActiveQuery
     {
         return $this->hasOne(City::class, ['id' => 'city_start_id']);
     }
 
-    /**
-     * Gets query for [[CruisePopularRouteRelations]].
-     *
-     * @return \yii\db\ActiveQuery
-     */
+ /*
     public function getCruisePopularRouteRelations()
     {
         return $this->hasMany(CruisePopularRouteRelation::class, ['cruise_id' => 'id']);
     }
 
-    /**
-     * Gets query for [[CruiseRegionRelations]].
-     *
-     * @return \yii\db\ActiveQuery
-     */
+
     public function getCruiseRegionRelations()
     {
         return $this->hasMany(CruiseRegionRelation::class, ['cruise_id' => 'id']);
     }
 
-    /**
-     * Gets query for [[CruiseRiverRelations]].
-     *
-     * @return \yii\db\ActiveQuery
-     */
+
     public function getCruiseRiverRelations()
     {
         return $this->hasMany(CruiseRiverRelation::class, ['cruise_id' => 'id']);
     }
 
-    /**
-     * Gets query for [[CruiseSuggestionRelations]].
-     *
-     * @return \yii\db\ActiveQuery
-     */
+
     public function getCruiseSuggestionRelations()
     {
         return $this->hasMany(CruiseSuggestionRelation::class, ['cruise_id' => 'id']);
     }
+ */
 
     /**
      * Gets query for [[PopularRoutes]].
      *
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
+     * @throws InvalidConfigException
      */
-    public function getPopularRoutes()
+    public function getPopularRoutes(): ActiveQuery
     {
         return $this->hasMany(PopularRoute::class, ['id' => 'popular_route_id'])->viaTable('cruise_popular_route_relation', ['cruise_id' => 'id']);
     }
@@ -195,9 +194,9 @@ class Cruise extends \yii\db\ActiveRecord
     /**
      * Gets query for [[PortEnd]].
      *
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
      */
-    public function getPortEnd()
+    public function getPortEnd(): ActiveQuery
     {
         return $this->hasOne(Port::class, ['id' => 'port_end_id']);
     }
@@ -205,9 +204,9 @@ class Cruise extends \yii\db\ActiveRecord
     /**
      * Gets query for [[PortStart]].
      *
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
      */
-    public function getPortStart()
+    public function getPortStart(): ActiveQuery
     {
         return $this->hasOne(Port::class, ['id' => 'port_start_id']);
     }
@@ -215,9 +214,10 @@ class Cruise extends \yii\db\ActiveRecord
     /**
      * Gets query for [[Regions]].
      *
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
+     * @throws InvalidConfigException
      */
-    public function getRegions()
+    public function getRegions(): ActiveQuery
     {
         return $this->hasMany(Region::class, ['id' => 'region_id'])->viaTable('cruise_region_relation', ['cruise_id' => 'id']);
     }
@@ -225,9 +225,10 @@ class Cruise extends \yii\db\ActiveRecord
     /**
      * Gets query for [[Rivers]].
      *
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
+     * @throws InvalidConfigException
      */
-    public function getRivers()
+    public function getRivers(): ActiveQuery
     {
         return $this->hasMany(River::class, ['id' => 'river_id'])->viaTable('cruise_river_relation', ['cruise_id' => 'id']);
     }
@@ -235,9 +236,9 @@ class Cruise extends \yii\db\ActiveRecord
     /**
      * Gets query for [[Ship]].
      *
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
      */
-    public function getShip()
+    public function getShip(): ActiveQuery
     {
         return $this->hasOne(Ship::class, ['id' => 'ship_id']);
     }
@@ -245,9 +246,10 @@ class Cruise extends \yii\db\ActiveRecord
     /**
      * Gets query for [[Suggestions]].
      *
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
+     * @throws InvalidConfigException
      */
-    public function getSuggestions()
+    public function getSuggestions(): ActiveQuery
     {
         return $this->hasMany(Suggestion::class, ['id' => 'suggestion_id'])->viaTable('cruise_suggestion_relation', ['cruise_id' => 'id']);
     }

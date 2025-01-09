@@ -12,7 +12,6 @@ use Yii;
  * @property int $priority
  * @property string $name
  * @property string|null $description
- * @property string $slug
  * @property int $status
  * @property string $created_at
  * @property string $updated_at
@@ -36,13 +35,12 @@ class Deck extends \yii\db\ActiveRecord
     public function rules(): array
     {
         return [
-            [['ship_id', 'name', 'slug'], 'required'],
+            [['ship_id', 'name'], 'required'],
             [['ship_id', 'priority', 'status'], 'default', 'value' => null],
             [['ship_id', 'priority', 'status'], 'integer'],
             [['description'], 'string'],
             [['created_at', 'updated_at'], 'safe'],
-            [['name', 'slug'], 'string', 'max' => 255],
-            [['slug'], 'unique'],
+            [['name'], 'string', 'max' => 255],
             [['ship_id'], 'exist', 'skipOnError' => true, 'targetClass' => Ship::class, 'targetAttribute' => ['ship_id' => 'id']],
         ];
     }
@@ -58,7 +56,6 @@ class Deck extends \yii\db\ActiveRecord
             'priority' => 'Priority',
             'name' => 'Name',
             'description' => 'Description',
-            'slug' => 'Slug',
             'status' => 'Status',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',

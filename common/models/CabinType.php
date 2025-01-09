@@ -2,6 +2,7 @@
 
 namespace common\models;
 
+use Pimple\Tests\Fixtures\Service;
 use Yii;
 
 /**
@@ -9,52 +10,52 @@ use Yii;
  *
  * @property int $id
  * @property string $name
- * @property string $slug
  * @property string|null $description
+ * @property int $ship_id
  * @property int $priority
  * @property bool $isEco
  * @property string $created_at
  * @property string $updated_at
  *
  * @property Cabin[] $cabins
+ * @property Service[] $services
  */
 class CabinType extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
      */
-    public static function tableName(): string
+    public static function tableName()
     {
-        return '{{%cabin_type}}';
+        return 'cabin_type';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function rules(): array
+    public function rules()
     {
         return [
-            [['name', 'slug'], 'required'],
+            [['name', 'ship_id'], 'required'],
             [['description'], 'string'],
-            [['priority'], 'default', 'value' => null],
-            [['priority'], 'integer'],
+            [['ship_id', 'priority'], 'default', 'value' => null],
+            [['ship_id', 'priority'], 'integer'],
             [['isEco'], 'boolean'],
             [['created_at', 'updated_at'], 'safe'],
-            [['name', 'slug'], 'string', 'max' => 255],
-            [['slug'], 'unique'],
+            [['name'], 'string', 'max' => 255],
         ];
     }
 
     /**
      * {@inheritdoc}
      */
-    public function attributeLabels(): array
+    public function attributeLabels()
     {
         return [
             'id' => 'ID',
             'name' => 'Name',
-            'slug' => 'Slug',
             'description' => 'Description',
+            'ship_id' => 'Ship ID',
             'priority' => 'Priority',
             'isEco' => 'Is Eco',
             'created_at' => 'Created At',
@@ -67,8 +68,18 @@ class CabinType extends \yii\db\ActiveRecord
      *
      * @return \yii\db\ActiveQuery
      */
-    public function getCabins(): \yii\db\ActiveQuery
+    public function getCabins()
     {
         return $this->hasMany(Cabin::class, ['cabin_type_id' => 'id']);
+    }
+
+    /**
+     * Gets query for [[Services]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getServices()
+    {
+        return $this->hasMany(Service::class, ['id' => 'service_id'])->viaTable('cabin_type_service_relation', ['cabin_type_id' => 'id']);
     }
 }
