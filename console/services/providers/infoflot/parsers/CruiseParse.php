@@ -8,6 +8,7 @@ use console\models\ProviderCombination;
 use console\services\providers\infoflot\InfoflotAPI;
 use Throwable;
 use yii\db\Exception;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Inflector;
 use yii\helpers\StringHelper;
 
@@ -26,67 +27,82 @@ class CruiseParse extends InfoflotAPI
         $page     = 1;
 
         while ($nextPage) {
-            $nextPage = $this->request($nextPage . '?page=' . $page);
+            try {
+                $cruises = $this->request('/cruises', ['page' => $page, 'limit' => 100]);
+            }catch (Throwable $e){
+                echo' Error GET cruises: ' . $e->getMessage().PHP_EOL;
+                print_r(['page' => $page, 'limit' => 20]);
+                die();
+            }
             $page++;
+            $nextPage = $cruises['pagination']['pages']['next']['url'] ?? NULL;
 
-            if (empty($nextPage['data'])) {
+            if (empty($cruises['data'])) {
                 echo 'data empty!';
                 continue;
             }
 
-            foreach ($nextPage['data'] as $item) {
-
-
+            foreach ($cruises['data'] as $item) {
                 try {
-                    $cruise = $this->request('/cruises/' . $item['id']);
-                    $cabins = $this->request('/cruises/' . $item['id'] . '/cabins');
+                $cruise = $this->request('/cruises/' . $item['id']);
+                //  $cabins = $this->request('/cruises/' . $item['id'] . '/cabins');
 
-                    $check = ProviderCombination::findOne([
-                        'provider_name' => self::PROVIDER_NAME, 'foreign_id' => $item['id'],
-                        'model_name'    => self::PROVIDER_MODEL_NAME_CRUISE]);
+                $check = ProviderCombination::findOne([
+                    'provider_name' => self::PROVIDER_NAME,
+                    'foreign_id'    => $item['id'],
+                    'model_name'    => self::PROVIDER_MODEL_NAME_CRUISE]);
 
-                    $title = $this->clearText($cruise['beautifulName']);
+                $title = $this->clearText($cruise['beautifulName']);
 
+                $slug   = $this->getSlug($cruise);
+                $params = [
+                    'name'                 => $title,
+                    'slug'                 => $slug,
+                    'route'                => $this->clearText($cruise['route'] ?? $cruise['routeShort']),
+                    'route_short'          => $this->clearText($cruise['routeShort']),
+                    'date_start'           => $cruise['dateStart'],
+                    'date_end'             => $cruise['dateEnd'],
+                    'date_start_timestamp' => $cruise['dateStartTimestamp'],
+                    'date_end_timestamp'   => $cruise['dateEndTimestamp'],
+                    'days'                 => $cruise['days'],
+                    'nights'               => $cruise['nights'],
+                    'min_price'            => $cruise['min_price'],
+                    'max_price'            => $cruise['max_price'],
+                    'currency'             => $cruise['currency'],
+                    'free_cabins'          => $cruise['freeCabins'],
+                    'ship_id'              => $this->getShipId($cruise['ship'] ?? []),
+                    'port_start_id'        => $this->getPortId($cruise['portStart'] ?? ''),
+                    'port_end_id'          => $this->getPortId($cruise['portEnd'] ?? ''),
+                    'city_start_id'        => $this->getCityId($cruise['startCity'] ?? ''),
+                    'city_end_id'          => $this->getCityId($cruise['endCity'] ?? ''),
+                    'map'                  => $cruise['map'],
+                    'timetable_json'       => $this->getTimetableJson($cruise['timetable'] ?? []),
+                    'cabins_json'          => json_encode([], JSON_THROW_ON_ERROR) //$this->getCabinsJson($cabins)
+                ];
 
+                if ($check) {
+                    \Yii::$app->db->createCommand()->update('{{%cruise}}', $params, ['id' => $check['internal_id']])->execute();
+                } else {
+                    \Yii::$app->db->createCommand()->insert('{{%cruise}}', $params)->execute();
+                    $cruiseNew = \Yii::$app->db->createCommand("SELECT id FROM cruise WHERE slug=:slug", ['slug' => $slug])->queryOne();
 
-                    $params = [
-                        'id'                   => $item['id'],
-                        'name'                 => $title,
-                        'slug'                 => $this->getSlug($cruise),
-                        'route'                => $this->clearText($cruise['routeShort'] ?? $cruise['route']),
-                        'date_start'           => $cruise['dateStart'],
-                        'date_end'             => $cruise['dateEnd'],
-                        'date_start_timestamp' => $cruise['dateStartTimestamp'],
-                        'date_end_timestamp'   => $cruise['dateEndTimestamp'],
-                        'days'                 => $cruise['days'],
-                        'nights'               => $cruise['nights'],
-                        'min_price'            => $cruise['minPrice'],
-                        'max_price'            => $cruise['maxPrice'],
-                        'currency'             => $cruise['currency'],
-                        'free_cabins'          => $cruise['freeCabins'],
-                        'ship_id'              => $this->getShipId($cruise['ship'] ?? []),
-                        'port_start_id'        => $this->getPortId($cruise['portStart'] ?? ''),
-                        'port_end_id'          => $this->getPortId($cruise['portEnd'] ?? ''),
-                        'start_city_id'        => $this->getCityId($cruise['startCity'] ?? ''),
-                        'end_city_id'          => $this->getCityId($cruise['endCity'] ?? ''),
-                        'map'                  => $cruise['map'],
-                        'timetable_json'       => $this->getTimetableJson($cruise['timetable'] ?? []),
-                        'cabins_json'          => $this->getCabinsJson($cabins)
-                    ];
+                    \Yii::$app->db->createCommand()->insert('provider_combination', [
+                        'provider_name' => self::PROVIDER_NAME,
+                        'foreign_id'    => $cruise['id'],
+                        'model_name'    => self::PROVIDER_MODEL_NAME_CRUISE,
+                        'internal_id'   => $cruiseNew['id'],
+                    ])->execute();
+                }
+
+                echo 'ADD cruise ID :' . $cruise['id'] . PHP_EOL;
+                echo "Internal ID :" . ($cruiseNew['id'] ?? $check['internal_id']) . PHP_EOL;
+
                 } catch (Throwable $e) {
+                    echo "Error ". $e->getMessage() . PHP_EOL;
                     continue;
                 }
             }
         }
-    }
-
-    protected function getInternalId(mixed $id)
-    {
-        $providerCombination = ProviderCombination::findOne([
-            'provider_name' => self::PROVIDER_NAME,
-            'foreign_id'    => $id,
-            'model_name'    => self::PROVIDER_MODEL_NAME_CRUISE
-        ]);
     }
 
     protected function getSlug(array $cruise): string
@@ -112,8 +128,12 @@ class CruiseParse extends InfoflotAPI
         if (empty($ship['id'])) {
             throw new \RuntimeException('Ship not found');
         }
+        if (empty($this->providerPortID)) {
+            $this->providerShipID = $this->getProviderShips();
+        }
+
         if ($this->providerShipID[$ship['id']]) {
-            return $this->providerShipID[$ship['id']];
+            return $this->providerShipID[$ship['id']]['internal_id'];
         }
 
         $providerCombination = ProviderCombination::findOne([
@@ -136,8 +156,10 @@ class CruiseParse extends InfoflotAPI
             return 0;
         }
 
+        $this->providerPortID = $this->getProviderPort();
+
         if ($this->providerPortID[$param['id']]) {
-            return $this->providerPortID[$param['id']];
+            return $this->providerPortID[$param['id']]['internal_id'];
         }
 
         $providerCombination = ProviderCombination::findOne([
@@ -160,8 +182,12 @@ class CruiseParse extends InfoflotAPI
             return 0;
         }
 
+        if (empty($this->providerCityID)) {
+            $this->providerCityID = $this->getProviderCity();
+        }
+
         if ($this->providerCityID[$param['id']]) {
-            return $this->providerCityID[$param['id']];
+            return $this->providerCityID[$param['id']]['internal_id'];
         }
 
         $providerCombination = ProviderCombination::findOne([
@@ -213,28 +239,54 @@ class CruiseParse extends InfoflotAPI
                 $item['hideDate'],
                 $item['hideTime']
             );
+            $out[] = $item;
         }
 
         return json_encode($out, JSON_THROW_ON_ERROR);
     }
 
-    /**
-     * @throws \JsonException
-     */
-    protected function getCabinsJson(array $cabins): false|string
+    protected function getProviderShips(): array
     {
-        $out = [];
+        $result = \Yii::$app->db->createCommand('SELECT * FROM provider_combination 
+         WHERE provider_name = :provider_name AND model_name = :model_name', [
+            ':provider_name' => self::PROVIDER_NAME,
+            ':model_name'    => self::PROVIDER_MODEL_NAME_SHIP
+        ])->queryAll();
 
-        if (empty($cabins['cabins'])) {
-            return json_encode($out, JSON_THROW_ON_ERROR);
+        if (empty($result)) {
+            return [];
         }
 
-        foreach ($cabins['cabins'] as $cabin) {
-
-        }
-
-
-        return json_encode($out, JSON_THROW_ON_ERROR);
+        return ArrayHelper::index($result, 'foreign_id');
     }
 
+    protected function getProviderPort(): array
+    {
+        $result = \Yii::$app->db->createCommand('SELECT * FROM provider_combination 
+         WHERE provider_name = :provider_name AND model_name = :model_name', [
+            ':provider_name' => self::PROVIDER_NAME,
+            ':model_name'    => self::PROVIDER_MODEL_NAME_PORT
+        ])->queryAll();
+
+        if (empty($result)) {
+            return [];
+        }
+
+        return ArrayHelper::index($result, 'foreign_id');
+    }
+
+    protected function getProviderCity(): array
+    {
+        $result = \Yii::$app->db->createCommand('SELECT * FROM provider_combination 
+         WHERE provider_name = :provider_name AND model_name = :model_name', [
+            ':provider_name' => self::PROVIDER_NAME,
+            ':model_name'    => self::PROVIDER_MODEL_NAME_CITY
+        ])->queryAll();
+
+        if (empty($result)) {
+            return [];
+        }
+
+        return ArrayHelper::index($result, 'foreign_id');
+    }
 }

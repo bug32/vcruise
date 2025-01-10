@@ -17,10 +17,13 @@ use Yii;
  * @property string|null $map ссылка на карту яндекс
  * @property string $created_at
  * @property string $updated_at
+ * @property int $country_id
  *
  * @property City $city
+ * @property Country $country
  * @property Cruise[] $cruises
  * @property Cruise[] $cruises0
+ * @property Dock[] $docks
  */
 class Port extends \yii\db\ActiveRecord
 {
@@ -39,13 +42,14 @@ class Port extends \yii\db\ActiveRecord
     {
         return [
             [['name', 'slug'], 'required'],
-            [['city_id'], 'default', 'value' => null],
-            [['city_id'], 'integer'],
+            [['city_id', 'country_id'], 'default', 'value' => null],
+            [['city_id', 'country_id'], 'integer'],
             [['description'], 'string'],
             [['created_at', 'updated_at'], 'safe'],
             [['name', 'slug', 'address', 'coordinates', 'map'], 'string', 'max' => 255],
             [['slug'], 'unique'],
             [['city_id'], 'exist', 'skipOnError' => true, 'targetClass' => City::class, 'targetAttribute' => ['city_id' => 'id']],
+            [['country_id'], 'exist', 'skipOnError' => true, 'targetClass' => Country::class, 'targetAttribute' => ['country_id' => 'id']],
         ];
     }
 
@@ -65,6 +69,7 @@ class Port extends \yii\db\ActiveRecord
             'map' => 'Map',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
+            'country_id' => 'Country ID',
         ];
     }
 
@@ -76,6 +81,16 @@ class Port extends \yii\db\ActiveRecord
     public function getCity()
     {
         return $this->hasOne(City::class, ['id' => 'city_id']);
+    }
+
+    /**
+     * Gets query for [[Country]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getCountry()
+    {
+        return $this->hasOne(Country::class, ['id' => 'country_id']);
     }
 
     /**
@@ -96,5 +111,15 @@ class Port extends \yii\db\ActiveRecord
     public function getCruises0()
     {
         return $this->hasMany(Cruise::class, ['port_end_id' => 'id']);
+    }
+
+    /**
+     * Gets query for [[Docks]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getDocks()
+    {
+        return $this->hasMany(Dock::class, ['port_id' => 'id']);
     }
 }

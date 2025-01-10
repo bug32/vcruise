@@ -17,7 +17,7 @@ class m241230_080833_create_cruise_table extends Migration
             'name' => $this->string()->notNull(),
             'slug' => $this->string()->notNull()->unique(),
             'route' => $this->text()->notNull(),
-            'route_short' => $this->string(),
+            'route_short' => $this->text(),
             'description' => $this->text(),
             'include' => $this->text()->comment('Включено'),
             'additional' => $this->text()->comment('Дополнительно'),

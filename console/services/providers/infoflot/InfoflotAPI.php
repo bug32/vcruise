@@ -21,6 +21,8 @@ class InfoflotAPI
     public const               PROVIDER_MODEL_NAME_CRUISE     = 'cruise';
     public const               PROVIDER_MODEL_NAME_PORT       = 'port';
     public const               PROVIDER_MODEL_NAME_CITY       = 'city';
+    public const               PROVIDER_MODEL_NAME_COUNTRY       = 'country';
+    public const               PROVIDER_MODEL_NAME_DOCK       = 'dock';
     public const               BASE_URL                       = 'https://restapi.infoflot.com';
     public const               TOKEN                          = "ddf71b33662078a069d2a1eacafefb33cc783bf6";
     public const               PAGE_LIMIT                     = 50;

@@ -31,6 +31,7 @@ class m241230_080015_create_port_table extends Migration
 
         $this->addForeignKey('fk-port-city_id', '{{%port}}', 'city_id', '{{%city}}', 'id');
 
+
         $this->insert('{{%port}}', [
             'name' => 'Не указан',
             'slug' => 'unknown',

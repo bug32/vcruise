@@ -45,6 +45,13 @@ class InfoflotController extends Controller
     {
         $otherParse = new \console\services\providers\infoflot\parsers\OtherParser();
         $otherParse->runCountry();
+    }
+
+    public function actionPort():void
+    {
+
+        $port = new \console\services\providers\infoflot\parsers\OtherParser();
+        $port->runPort();
 
     }
 
