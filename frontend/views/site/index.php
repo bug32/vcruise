@@ -10,7 +10,6 @@ use frontend\widgets\recommend\MainRecommendWidget;
 
 $this->title = 'My Yii Application';
 
-
 $this->registerJs(<<<JS
 
 JS, View::POS_END);

@@ -19,6 +19,7 @@ class m241230_080833_create_cruise_table extends Migration
             'route' => $this->text()->notNull(),
             'route_short' => $this->string()->notNull(),
             'description' => $this->text(),
+            'type' => $this->string()->defaultValue(0)->comment('Круиз Речной или Морской'),
             'include' => $this->text()->comment('Включено'),
             'additional' => $this->text()->comment('Дополнительно'),
             'discounts' => $this->text()->comment('Скидки'),
