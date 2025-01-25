@@ -16,8 +16,8 @@ class m241229_085620_create_type_ship_table extends Migration
             'id'          => $this->primaryKey(),
             'name'        => $this->string()->notNull(),
             'slug'        => $this->string()->notNull()->unique(),
-            'status'      => $this->smallInteger()->notNull()->defaultValue(10),
-            'priority' => $this->integer()->notNull()->defaultValue(0),
+            'status'      => $this->smallInteger()->defaultValue(10),
+            'priority' => $this->integer()->defaultValue(0),
             'icon'        => $this->string(),
             'description' => $this->text(),
             'created_at'  => $this->timestamp()->notNull()->defaultExpression(new \yii\db\Expression('NOW()')),
@@ -28,6 +28,14 @@ class m241229_085620_create_type_ship_table extends Migration
 
         $this->createIndex('idx_type_ship_slug-status', '{{%type_ship}}', ['slug', 'status'], TRUE);
         $this->createIndex('idx_type_ship_status', '{{%type_ship}}', 'status');
+
+        $this->insert('{{%type_ship}}', [
+            'id' => 0,
+            'name' => 'Не указано',
+            'slug' => 'not-specified',
+            'status' => 10,
+            'priority' => 0,
+        ]);
     }
 
     /**

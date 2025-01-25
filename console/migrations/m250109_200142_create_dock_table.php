@@ -3,32 +3,29 @@
 use yii\db\Migration;
 
 /**
- * Handles the creation of table `{{%rivers}}`.
+ * Handles the creation of table `{{%dock}}`.
  */
-class m241229_120610_create_river_table extends Migration
+class m250109_200142_create_dock_table extends Migration
 {
     /**
      * {@inheritdoc}
      */
     public function safeUp()
     {
-        $this->createTable('{{%river}}', [
+        $this->createTable('{{%dock}}', [
             'id' => $this->primaryKey(),
+            'port_id' => $this->integer()->notNull(),
             'name' => $this->string()->notNull(),
-            'slug' => $this->string()->notNull()->unique(),
-            'description' => $this->text(),
+            'address' => $this->string(),
+            'coordinates' => $this->string(),
 
             'created_at' => $this->timestamp()->notNull()->defaultExpression(new \yii\db\Expression('NOW()')),
             'updated_at' => $this->timestamp()->notNull()->defaultExpression(new \yii\db\Expression('NOW()')),
         ]);
 
-        $this->createIndex('idx_river_slug', '{{%river}}', 'slug');
+        $this->addCommentOnTable('dock', 'Портовые доки');
 
-        $this->insert('{{%river}}', [
-            'id' => 0,
-            'name' => 'Не указано',
-            'slug' => 'not-specified',
-        ]);
+        $this->addForeignKey('fk_dock_port', 'dock', 'port_id', 'port', 'id', 'CASCADE');
     }
 
     /**
@@ -36,6 +33,6 @@ class m241229_120610_create_river_table extends Migration
      */
     public function safeDown()
     {
-        $this->dropTable('{{%river}}');
+        $this->dropTable('{{%dock}}');
     }
 }

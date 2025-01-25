@@ -16,8 +16,8 @@ class m241229_085619_create_operator_table extends Migration
             'id'          => $this->primaryKey(),
             'name'        => $this->string()->notNull(),
             'slug'        => $this->string()->notNull()->unique(),
-            'status'      => $this->smallInteger()->notNull()->defaultValue(10),
-            'rating'      => $this->smallInteger()->notNull()->defaultValue(0),
+            'status'      => $this->smallInteger()->defaultValue(10),
+            'rating'      => $this->smallInteger()->defaultValue(0),
             'description' => $this->text(),
             'logo'        => $this->string(),
             'url'         => $this->string(),
@@ -36,6 +36,13 @@ class m241229_085619_create_operator_table extends Migration
             'status'
         );
         $this->createIndex('idx_operator_slug-status', '{{%operator}}', ['slug', 'status'], TRUE);
+
+        $this->insert('{{%operator}}', [
+            'id' => 0,
+            'name' => 'Не указан',
+            'slug' => 'not-specified',
+            'status' => 10
+        ]);
     }
 
     /**

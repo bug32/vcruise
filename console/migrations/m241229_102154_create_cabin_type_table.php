@@ -15,8 +15,8 @@ class m241229_102154_create_cabin_type_table extends Migration
         $this->createTable('{{%cabin_type}}', [
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),
-            'slug' => $this->string()->notNull()->unique(),
             'description' => $this->text(),
+            'ship_id' => $this->integer()->notNull(),
 
             'priority' => $this->integer()->notNull()->defaultValue(0),
             'isEco' => $this->boolean()->notNull()->defaultValue(false),
@@ -26,6 +26,8 @@ class m241229_102154_create_cabin_type_table extends Migration
         ]);
 
         $this->addCommentOnTable('{{%cabin_type}}', 'Типы кают');
+
+        $this->addForeignKey('fk_cabin_type_ship', '{{%cabin_type}}', 'ship_id', '{{%ship}}', 'id', 'CASCADE');
     }
 
     /**

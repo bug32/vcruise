@@ -3,30 +3,30 @@
 use yii\db\Migration;
 
 /**
- * Handles the creation of table `{{%onboard_service}}`.
+ * Handles the creation of table `{{%service}}`.
  */
-class m241229_121052_create_onboard_service_table extends Migration
+class m241229_121052_create_service_table extends Migration
 {
     /**
      * {@inheritdoc}
      */
     public function safeUp()
     {
-        $this->createTable('{{%onboard_service}}', [
+        $this->createTable('{{%service}}', [
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),
             'slug' => $this->string()->notNull()->unique(),
             'icon' => $this->string(),
             'description' => $this->text(),
-            'priority' => $this->integer()->notNull()->defaultValue(0),
+            'priority' => $this->integer()->defaultValue(0),
 
             'created_at' => $this->timestamp()->notNull()->defaultExpression(new \yii\db\Expression('NOW()')),
             'updated_at' => $this->timestamp()->notNull()->defaultExpression(new \yii\db\Expression('NOW()')),
         ]);
 
-        $this->addCommentOnTable('{{%onboard_service}}', 'Сервисы на борту');
+        $this->addCommentOnTable('{{%service}}', 'Сервисы на борту');
 
-        $this->createIndex('idx_onboard_service_slug', '{{%onboard_service}}', 'slug');
+        $this->createIndex('idx_service_slug', '{{%service}}', 'slug');
     }
 
     /**
@@ -34,6 +34,6 @@ class m241229_121052_create_onboard_service_table extends Migration
      */
     public function safeDown()
     {
-        $this->dropTable('{{%onboard_service}}');
+        $this->dropTable('{{%service}}');
     }
 }

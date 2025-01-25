@@ -17,31 +17,32 @@ class m241230_080833_create_cruise_table extends Migration
             'name' => $this->string()->notNull(),
             'slug' => $this->string()->notNull()->unique(),
             'route' => $this->text()->notNull(),
-            'route_short' => $this->string()->notNull(),
+            'route_short' => $this->text(),
             'description' => $this->text(),
             'type' => $this->string()->defaultValue(0)->comment('Круиз Речной или Морской'),
             'include' => $this->text()->comment('Включено'),
             'additional' => $this->text()->comment('Дополнительно'),
             'discounts' => $this->text()->comment('Скидки'),
             'map' => $this->string()->comment('ссылка на карту маршрута'),
+            'status' => $this->smallInteger()->defaultValue(10),
 
             'date_start' => $this->date()->notNull(),
             'date_end' => $this->date()->notNull(),
             'date_start_timestamp' => $this->integer()->notNull(),
             'date_end_timestamp' => $this->integer()->notNull(),
-            'days' => $this->smallInteger()->notNull(),
-            'nights' => $this->smallInteger()->notNull(),
+            'days' => $this->smallInteger(),
+            'nights' => $this->smallInteger(),
 
-            'min_price' => $this->integer()->notNull(),
-            'max_price' => $this->integer()->notNull(),
-            'currency' => $this->string()->notNull()->defaultValue(1),
+            'min_price' => $this->integer(),
+            'max_price' => $this->integer(),
+            'currency' => $this->string()->defaultValue(1)->comment('Валюта'),
 
-            'free_cabins' => $this->integer()->notNull()->defaultValue(0),
+            'free_cabins' => $this->integer()->defaultValue(0),
 
             'ship_id' => $this->integer()->notNull(),
 
-            'port_start_id' => $this->integer()->notNull()->defaultValue(0), // 'port_id'
-            'port_end_id' => $this->integer()->notNull()->defaultValue(0), // 'port_id'
+            'port_start_id' => $this->integer()->defaultValue(0), // 'port_id'
+            'port_end_id' => $this->integer()->defaultValue(0), // 'port_id'
             'dock_start' => $this->string(),
 
             'city_start_id' => $this->integer()->notNull()->defaultValue(0), // 'city_id'

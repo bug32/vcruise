@@ -15,12 +15,13 @@ class m241230_090729_create_cruise_media_table extends Migration
         $this->createTable('{{%cruise_media}}', [
             'id' => $this->primaryKey(),
             'cruise_id' => $this->integer()->notNull(),
-            'name' => $this->string()->notNull(),
+            'alt' => $this->string(),
 
-            'mime_type' => $this->string()->notNull(),
+            'name' => $this->string(),
+            'mime_type' => $this->string(),
             'url' => $this->string()->notNull(),
-            'size' => $this->integer()->notNull(),
-            'priority' => $this->integer()->notNull()->defaultValue(0),
+            'size' => $this->integer()->defaultValue(0),
+            'priority' => $this->integer()->defaultValue(0),
 
             'created_at' => $this->timestamp()->notNull()->defaultExpression(new \yii\db\Expression('NOW()')),
             'updated_at' => $this->timestamp()->notNull()->defaultExpression(new \yii\db\Expression('NOW()')),

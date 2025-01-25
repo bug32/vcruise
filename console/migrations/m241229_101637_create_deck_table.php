@@ -20,8 +20,7 @@ class m241229_101637_create_deck_table extends Migration
             'name' => $this->string()->notNull(),
             'description' => $this->text(),
 
-            'slug' => $this->string()->notNull()->unique(),
-            'status' => $this->smallInteger()->notNull()->defaultValue(10),
+            'status' => $this->smallInteger()->defaultValue(10),
 
             'created_at' => $this->timestamp()->notNull()->defaultExpression(new \yii\db\Expression('NOW()')),
             'updated_at' => $this->timestamp()->notNull()->defaultExpression(new \yii\db\Expression('NOW()')),
