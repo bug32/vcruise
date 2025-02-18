@@ -19,6 +19,7 @@ class m241229_115151_create_city_table extends Migration
             'description' => $this->text(),
             'logo'        => $this->string(),
             'country_id'  => $this->integer()->notNull(),
+            'is_filter' => $this->tinyInteger(2)->defaultValue(0)->comment('Показывать в фильтре'),
 
             /* Координаты города на карте */
             'long'        => $this->string(),
