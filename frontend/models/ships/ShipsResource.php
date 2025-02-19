@@ -2,7 +2,7 @@
 
 namespace frontend\models\ships;
 
-class ShipResource extends Ship
+class ShipsResource extends Ships
 {
 
     public function fields(): array
@@ -12,7 +12,7 @@ class ShipResource extends Ship
             'name',
             'slug',
             'photos' => function () {
-                return $this->shipMedia;
+                return [];
             }
         ];
     }

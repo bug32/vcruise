@@ -3,7 +3,7 @@
 use yii\db\Migration;
 
 /**
- * Handles the creation of table `{{%cruise_type}}`.
+ * Handles the creation of table `{{%cruise_types}}`.
  */
 class m250219_102658_create_cruise_type_table extends Migration
 {
@@ -12,7 +12,7 @@ class m250219_102658_create_cruise_type_table extends Migration
      */
     public function safeUp()
     {
-        $this->createTable('{{%cruise_type}}', [
+        $this->createTable('{{%cruise_types}}', [
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),
             'slug' => $this->string()->notNull()->unique(),
@@ -21,7 +21,7 @@ class m250219_102658_create_cruise_type_table extends Migration
             'updated_at' => $this->timestamp()->notNull()->defaultExpression(new \yii\db\Expression('NOW()')),
         ]);
 
-        $this->insert('{{%cruise_type}}', [
+        $this->insert('{{%cruise_types}}', [
             'id' => 1,
             'name' => 'Не указан',
             'slug' => 'unknown',
@@ -33,6 +33,6 @@ class m250219_102658_create_cruise_type_table extends Migration
      */
     public function safeDown()
     {
-        $this->dropTable('{{%cruise_type}}');
+        $this->dropTable('{{%cruise_types}}');
     }
 }

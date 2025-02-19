@@ -2,7 +2,7 @@
 
 namespace frontend\models\ships;
 
-class Ship extends \common\models\Ship
+class Ships extends \common\models\Ships
 {
 
 }

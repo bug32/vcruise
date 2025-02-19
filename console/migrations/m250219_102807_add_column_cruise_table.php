@@ -24,7 +24,7 @@ class m250219_102807_add_column_cruise_table extends Migration
             'fk_cruise_type',
             '{{%cruises}}',
             'type_id',
-            '{{%cruise_type}}',
+            '{{%cruise_types}}',
             'id',
             'CASCADE'
         );

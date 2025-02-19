@@ -2,7 +2,7 @@
 
 namespace frontend\models\cruises;
 
-class Cruise extends \common\models\Cruise
+class Cruises extends \common\models\Cruises
 {
 
 }

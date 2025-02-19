@@ -49,17 +49,17 @@ use yii\db\ActiveQuery as ActiveQueryAlias;
  * @property Cities $cityEnd
  * @property Cities $cityStart
  * @property CruisePopularRouteRelations[] $cruisePopularRouteRelations
- * @property CruiseRegionRelations[] $cruiseRegionRelations
- * @property CruiseRiverRelations[] $cruiseRiverRelations
+ * @property CruiseRegionRelations[]     $cruiseRegionRelations
+ * @property CruiseRiverRelations[]      $cruiseRiverRelations
  * @property CruiseSuggestionRelations[] $cruiseSuggestionRelations
- * @property PopularRoutes[] $popularRoutes
- * @property Ports $portEnd
- * @property Ports $portStart
- * @property Regions[] $regions
- * @property Rivers[] $rivers
- * @property Ships $ship
- * @property Suggestions[] $suggestions
- * @property CruiseType $type
+ * @property PopularRoutes[]             $popularRoutes
+ * @property Ports                       $portEnd
+ * @property Ports                       $portStart
+ * @property Regions[]                   $regions
+ * @property Rivers[]                    $rivers
+ * @property Ships                       $ship
+ * @property Suggestions[]               $suggestions
+ * @property CruiseTypes                 $type
  */
 class Cruises extends \yii\db\ActiveRecord
 {
@@ -88,7 +88,7 @@ class Cruises extends \yii\db\ActiveRecord
             [['port_end_id'], 'exist', 'skipOnError' => true, 'targetClass' => Ports::class, 'targetAttribute' => ['port_end_id' => 'id']],
             [['port_start_id'], 'exist', 'skipOnError' => true, 'targetClass' => Ports::class, 'targetAttribute' => ['port_start_id' => 'id']],
             [['ship_id'], 'exist', 'skipOnError' => true, 'targetClass' => Ships::class, 'targetAttribute' => ['ship_id' => 'id']],
-            [['type_id'], 'exist', 'skipOnError' => true, 'targetClass' => CruiseType::class, 'targetAttribute' => ['type_id' => 'id']],
+            [['type_id'], 'exist', 'skipOnError' => true, 'targetClass' => CruiseTypes::class, 'targetAttribute' => ['type_id' => 'id']],
         ];
     }
 
@@ -274,6 +274,6 @@ class Cruises extends \yii\db\ActiveRecord
      */
     public function getType(): ActiveQueryAlias
     {
-        return $this->hasOne(CruiseType::class, ['id' => 'type_id']);
+        return $this->hasOne(CruiseTypes::class, ['id' => 'type_id']);
     }
 }

@@ -4,10 +4,9 @@ namespace frontend\models\cruises;
 
 use yii\data\ActiveDataProvider;
 
-class CruiseSearch extends CruiseResource
+class CruisesSearch extends CruisesResource
 {
-    public $limit;
-    public $page;
+    public $type;
 
     public function rules(): array
     {
@@ -19,13 +18,14 @@ class CruiseSearch extends CruiseResource
 
             [['name'], 'string'],
             [['days'], 'integer'],
+            ['type', 'string'],
         ];
     }
 
     public function search(array $params = []): ActiveDataProvider
     {
 
-        $query = CruiseResource::find()->joinWith(['ship','type']);
+        $query = CruisesResource::find()->joinWith(['ship', 'type']);
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query
@@ -40,6 +40,9 @@ class CruiseSearch extends CruiseResource
 
         $query->andFilterWhere(['>=', 'date_start_timestamp', time()]);
 
+        if( $this->type ) {
+            $type = Cruis
+        }
 
 
         $dataProvider->pagination = ['pageSize' => $this->limit];

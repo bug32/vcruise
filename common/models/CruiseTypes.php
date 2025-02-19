@@ -16,14 +16,14 @@ use yii\db\ActiveQuery as ActiveQueryAlias;
  *
  * @property Cruises[] $cruises
  */
-class CruiseType extends \yii\db\ActiveRecord
+class CruiseTypes extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
      */
     public static function tableName(): string
     {
-        return 'cruise_type';
+        return 'cruise_types';
     }
 
     /**

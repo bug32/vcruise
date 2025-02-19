@@ -37,26 +37,6 @@ return [
         ],
         'view'         => [
             'class'           => frontend\components\View::class,
-            'enableMinify'    => YII_ENV_PROD,
-            'concatCss'       => TRUE,                     // concatenate css
-            'minifyCss'       => TRUE,                     // minification css
-            'concatJs'        => TRUE,                     // concatenate js
-            'minifyJs'        => TRUE,                     // minification js
-            'minifyOutput'    => TRUE,                     // minification result html page
-            'webPath'         => '@web',                   // path alias to web base
-            'basePath'        => '@webroot',               // path alias to web base
-            'minifyPath'      => '@webroot/minify',        // path alias to save minify result
-            'jsPosition'      => [\yii\web\View::POS_END], // positions of js files to be minified
-            'forceCharset'    => 'UTF-8',                  // charset forcibly assign, otherwise will use all the files found charset
-            'expandImports'   => TRUE,                     // whether to change @import on content
-            'compressOptions' => ['extra' => TRUE],        // options for compress
-            'excludeFiles'    => [
-                'jquery.js',   // exclude this file from minification
-                'app-[^.].js', // you may use regexp
-            ],
-            'excludeBundles'  => [
-                //  \app\helloworld\AssetBundle::class, // exclude this bundle from minification
-            ],
         ],
 
         'user'         => [

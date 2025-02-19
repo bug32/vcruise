@@ -2,16 +2,16 @@
 
 namespace frontend\models\cruises;
 
-use frontend\models\ships\ShipResource;
+use frontend\models\ships\ShipsResource;
+use yii\db\ActiveQuery;
 
 /*
  *
  * @property ShipResource $ship
  * */
-class CruiseResource extends Cruise
+class CruisesResource extends Cruises
 {
 
-    public $expand='ship';
     public function fields(): array
     {
         return [
@@ -44,11 +44,11 @@ class CruiseResource extends Cruise
     /**
      * Gets query for [[Ship]].
      *
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
      */
-    public function getShip(): \yii\db\ActiveQuery
+    public function getShip(): ActiveQuery
     {
-        return $this->hasOne(ShipResource::class, ['id' => 'ship_id']);
+        return $this->hasOne(ShipsResource::class, ['id' => 'ship_id']);
     }
 
 }
