@@ -5,7 +5,7 @@ namespace common\models;
 use Yii;
 
 /**
- * This is the model class for table "cabin".
+ * This is the model class for table "cabins".
  *
  * @property int $id
  * @property int $ship_id
@@ -18,42 +18,41 @@ use Yii;
  * @property string $created_at
  * @property string $updated_at
  *
- * @property CabinType $cabinType
- * @property Deck $deck
- * @property Ship $ship
+ * @property CabinTypes $cabinType
+ * @property Decks $deck
+ * @property Ships $ship
  */
-class Cabin extends \yii\db\ActiveRecord
+class Cabins extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
      */
-    public static function tableName(): string
+    public static function tableName()
     {
-        return '{{%cabins}}';
+        return 'cabins';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function rules(): array
+    public function rules()
     {
         return [
             [['ship_id', 'deck_id', 'cabin_type_id', 'name'], 'required'],
-            [['ship_id', 'deck_id', 'cabin_type_id', 'places', 'additionalPlaces'], 'default', 'value' => null],
             [['ship_id', 'deck_id', 'cabin_type_id', 'places', 'additionalPlaces'], 'integer'],
             [['description'], 'string'],
             [['created_at', 'updated_at'], 'safe'],
             [['name'], 'string', 'max' => 255],
-            [['cabin_type_id'], 'exist', 'skipOnError' => true, 'targetClass' => CabinType::class, 'targetAttribute' => ['cabin_type_id' => 'id']],
-            [['deck_id'], 'exist', 'skipOnError' => true, 'targetClass' => Deck::class, 'targetAttribute' => ['deck_id' => 'id']],
-            [['ship_id'], 'exist', 'skipOnError' => true, 'targetClass' => Ship::class, 'targetAttribute' => ['ship_id' => 'id']],
+            [['cabin_type_id'], 'exist', 'skipOnError' => true, 'targetClass' => CabinTypes::class, 'targetAttribute' => ['cabin_type_id' => 'id']],
+            [['deck_id'], 'exist', 'skipOnError' => true, 'targetClass' => Decks::class, 'targetAttribute' => ['deck_id' => 'id']],
+            [['ship_id'], 'exist', 'skipOnError' => true, 'targetClass' => Ships::class, 'targetAttribute' => ['ship_id' => 'id']],
         ];
     }
 
     /**
      * {@inheritdoc}
      */
-    public function attributeLabels():array
+    public function attributeLabels()
     {
         return [
             'id' => 'ID',
@@ -76,7 +75,7 @@ class Cabin extends \yii\db\ActiveRecord
      */
     public function getCabinType(): \yii\db\ActiveQuery
     {
-        return $this->hasOne(CabinType::class, ['id' => 'cabin_type_id']);
+        return $this->hasOne(CabinTypes::class, ['id' => 'cabin_type_id']);
     }
 
     /**
@@ -86,7 +85,7 @@ class Cabin extends \yii\db\ActiveRecord
      */
     public function getDeck(): \yii\db\ActiveQuery
     {
-        return $this->hasOne(Deck::class, ['id' => 'deck_id']);
+        return $this->hasOne(Decks::class, ['id' => 'deck_id']);
     }
 
     /**
@@ -96,6 +95,6 @@ class Cabin extends \yii\db\ActiveRecord
      */
     public function getShip(): \yii\db\ActiveQuery
     {
-        return $this->hasOne(Ship::class, ['id' => 'ship_id']);
+        return $this->hasOne(Ships::class, ['id' => 'ship_id']);
     }
 }

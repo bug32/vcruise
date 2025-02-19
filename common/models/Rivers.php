@@ -2,10 +2,13 @@
 
 namespace common\models;
 
+use common\models\relations\CruiseRiverRelations;
 use Yii;
+use yii\base\InvalidConfigException;
+use yii\db\ActiveQuery;
 
 /**
- * This is the model class for table "popular_route".
+ * This is the model class for table "rivers".
  *
  * @property int $id
  * @property string $name
@@ -14,23 +17,23 @@ use Yii;
  * @property string $created_at
  * @property string $updated_at
  *
- * @property CruisePopularRouteRelation[] $cruisePopularRouteRelations
- * @property Cruise[] $cruises
+ * @property CruiseRiverRelations[] $cruiseRiverRelations
+ * @property Cruises[] $cruises
  */
-class PopularRoute extends \yii\db\ActiveRecord
+class Rivers extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
      */
-    public static function tableName()
+    public static function tableName(): string
     {
-        return 'popular_route';
+        return 'rivers';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['name', 'slug'], 'required'],
@@ -44,7 +47,7 @@ class PopularRoute extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'id' => 'ID',
@@ -57,22 +60,23 @@ class PopularRoute extends \yii\db\ActiveRecord
     }
 
     /**
-     * Gets query for [[CruisePopularRouteRelations]].
+     * Gets query for [[CruiseRiverRelations]].
      *
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
      */
-    public function getCruisePopularRouteRelations()
+    public function getCruiseRiverRelations(): ActiveQuery
     {
-        return $this->hasMany(CruisePopularRouteRelation::class, ['popular_route_id' => 'id']);
+        return $this->hasMany(CruiseRiverRelations::class, ['river_id' => 'id']);
     }
 
     /**
      * Gets query for [[Cruises]].
      *
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
+     * @throws InvalidConfigException
      */
-    public function getCruises()
+    public function getCruises(): ActiveQuery
     {
-        return $this->hasMany(Cruise::class, ['id' => 'cruise_id'])->viaTable('cruise_popular_route_relation', ['popular_route_id' => 'id']);
+        return $this->hasMany(Cruises::class, ['id' => 'cruise_id'])->viaTable('cruise_river_relations', ['river_id' => 'id']);
     }
 }

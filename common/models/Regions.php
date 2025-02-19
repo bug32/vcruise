@@ -2,10 +2,13 @@
 
 namespace common\models;
 
+use common\models\relations\CruiseRegionRelations;
 use Yii;
+use yii\base\InvalidConfigException;
+use yii\db\ActiveQuery;
 
 /**
- * This is the model class for table "river".
+ * This is the model class for table "regions".
  *
  * @property int $id
  * @property string $name
@@ -14,23 +17,23 @@ use Yii;
  * @property string $created_at
  * @property string $updated_at
  *
- * @property CruiseRiverRelation[] $cruiseRiverRelations
- * @property Cruise[] $cruises
+ * @property CruiseRegionRelations[] $cruiseRegionRelations
+ * @property Cruises[] $cruises
  */
-class River extends \yii\db\ActiveRecord
+class Regions extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
      */
-    public static function tableName()
+    public static function tableName(): string
     {
-        return 'river';
+        return 'regions';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['name', 'slug'], 'required'],
@@ -44,7 +47,7 @@ class River extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'id' => 'ID',
@@ -57,22 +60,23 @@ class River extends \yii\db\ActiveRecord
     }
 
     /**
-     * Gets query for [[CruiseRiverRelations]].
+     * Gets query for [[CruiseRegionRelations]].
      *
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
      */
-    public function getCruiseRiverRelations()
+    public function getCruiseRegionRelations(): ActiveQuery
     {
-        return $this->hasMany(CruiseRiverRelation::class, ['river_id' => 'id']);
+        return $this->hasMany(CruiseRegionRelations::class, ['region_id' => 'id']);
     }
 
     /**
      * Gets query for [[Cruises]].
      *
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
+     * @throws InvalidConfigException
      */
-    public function getCruises()
+    public function getCruises(): ActiveQuery
     {
-        return $this->hasMany(Cruise::class, ['id' => 'cruise_id'])->viaTable('cruise_river_relation', ['river_id' => 'id']);
+        return $this->hasMany(Cruises::class, ['id' => 'cruise_id'])->viaTable('cruise_region_relations', ['region_id' => 'id']);
     }
 }

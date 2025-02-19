@@ -3,27 +3,27 @@
 namespace common\models;
 
 use Yii;
+use yii\db\ActiveQuery as ActiveQueryAlias;
 
 /**
- * This is the model class for table "onboard_service".
+ * This is the model class for table "cruise_type".
  *
  * @property int $id
  * @property string $name
  * @property string $slug
- * @property string|null $icon
- * @property string|null $description
- * @property int $priority
  * @property string $created_at
  * @property string $updated_at
+ *
+ * @property Cruises[] $cruises
  */
-class OnboardService extends \yii\db\ActiveRecord
+class CruiseType extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
      */
     public static function tableName(): string
     {
-        return '{{%onboard_service}}';
+        return 'cruise_type';
     }
 
     /**
@@ -33,11 +33,8 @@ class OnboardService extends \yii\db\ActiveRecord
     {
         return [
             [['name', 'slug'], 'required'],
-            [['description'], 'string'],
-            [['priority'], 'default', 'value' => null],
-            [['priority'], 'integer'],
             [['created_at', 'updated_at'], 'safe'],
-            [['name', 'slug', 'icon'], 'string', 'max' => 255],
+            [['name', 'slug'], 'string', 'max' => 255],
             [['slug'], 'unique'],
         ];
     }
@@ -51,11 +48,18 @@ class OnboardService extends \yii\db\ActiveRecord
             'id' => 'ID',
             'name' => 'Name',
             'slug' => 'Slug',
-            'icon' => 'Icon',
-            'description' => 'Description',
-            'priority' => 'Priority',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
         ];
+    }
+
+    /**
+     * Gets query for [[Cruises]].
+     *
+     * @return ActiveQueryAlias
+     */
+    public function getCruises(): ActiveQueryAlias
+    {
+        return $this->hasMany(Cruises::class, ['type_id' => 'id']);
     }
 }

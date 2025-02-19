@@ -3,15 +3,16 @@
 namespace common\models;
 
 use Yii;
+use yii\db\ActiveQuery;
 
 /**
- * This is the model class for table "operator".
+ * This is the model class for table "operators".
  *
  * @property int $id
  * @property string $name
  * @property string $slug
- * @property int $status
- * @property int $rating
+ * @property int|null $status
+ * @property int|null $rating
  * @property string|null $description
  * @property string|null $logo
  * @property string|null $url
@@ -20,16 +21,16 @@ use Yii;
  * @property string $created_at
  * @property string $updated_at
  *
- * @property Ship[] $ships
+ * @property Ships[] $ships
  */
-class Operator extends \yii\db\ActiveRecord
+class Operators extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
      */
     public static function tableName(): string
     {
-        return '{{%operators}}';
+        return 'operators';
     }
 
     /**
@@ -39,13 +40,12 @@ class Operator extends \yii\db\ActiveRecord
     {
         return [
             [['name', 'slug'], 'required'],
-            [['status', 'rating'], 'default', 'value' => null],
             [['status', 'rating'], 'integer'],
             [['description'], 'string'],
             [['created_at', 'updated_at'], 'safe'],
             [['name', 'slug', 'logo', 'url', 'phone', 'email'], 'string', 'max' => 255],
-            [['slug', 'status'], 'unique', 'targetAttribute' => ['slug', 'status']],
             [['slug'], 'unique'],
+            [['slug', 'status'], 'unique', 'targetAttribute' => ['slug', 'status']],
         ];
     }
 
@@ -73,10 +73,10 @@ class Operator extends \yii\db\ActiveRecord
     /**
      * Gets query for [[Ships]].
      *
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
      */
-    public function getShips(): \yii\db\ActiveQuery
+    public function getShips(): ActiveQuery
     {
-        return $this->hasMany(Ship::class, ['operatorId' => 'id']);
+        return $this->hasMany(Ships::class, ['operatorId' => 'id']);
     }
 }

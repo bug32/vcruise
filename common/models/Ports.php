@@ -3,9 +3,10 @@
 namespace common\models;
 
 use Yii;
+use yii\db\ActiveQuery;
 
 /**
- * This is the model class for table "port".
+ * This is the model class for table "ports".
  *
  * @property int $id
  * @property string $name
@@ -19,44 +20,43 @@ use Yii;
  * @property string $updated_at
  * @property int $country_id
  *
- * @property City $city
- * @property Country $country
- * @property Cruise[] $cruises
- * @property Cruise[] $cruises0
- * @property Dock[] $docks
+ * @property Cities $city
+ * @property Countries $country
+ * @property Cruises[] $cruises
+ * @property Cruises[] $cruises0
+ * @property Docks[] $docks
  */
-class Port extends \yii\db\ActiveRecord
+class Ports extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
      */
-    public static function tableName()
+    public static function tableName(): string
     {
-        return 'port';
+        return 'ports';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['name', 'slug'], 'required'],
-            [['city_id', 'country_id'], 'default', 'value' => null],
             [['city_id', 'country_id'], 'integer'],
             [['description'], 'string'],
             [['created_at', 'updated_at'], 'safe'],
             [['name', 'slug', 'address', 'coordinates', 'map'], 'string', 'max' => 255],
             [['slug'], 'unique'],
-            [['city_id'], 'exist', 'skipOnError' => true, 'targetClass' => City::class, 'targetAttribute' => ['city_id' => 'id']],
-            [['country_id'], 'exist', 'skipOnError' => true, 'targetClass' => Country::class, 'targetAttribute' => ['country_id' => 'id']],
+            [['city_id'], 'exist', 'skipOnError' => true, 'targetClass' => Cities::class, 'targetAttribute' => ['city_id' => 'id']],
+            [['country_id'], 'exist', 'skipOnError' => true, 'targetClass' => Countries::class, 'targetAttribute' => ['country_id' => 'id']],
         ];
     }
 
     /**
      * {@inheritdoc}
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'id' => 'ID',
@@ -65,8 +65,8 @@ class Port extends \yii\db\ActiveRecord
             'city_id' => 'City ID',
             'description' => 'Description',
             'address' => 'Address',
-            'coordinates' => 'Coordinates',
-            'map' => 'Map',
+            'coordinates' => 'Координаты порта',
+            'map' => 'ссылка на карту яндекс',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
             'country_id' => 'Country ID',
@@ -76,50 +76,50 @@ class Port extends \yii\db\ActiveRecord
     /**
      * Gets query for [[City]].
      *
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
      */
-    public function getCity()
+    public function getCity(): ActiveQuery
     {
-        return $this->hasOne(City::class, ['id' => 'city_id']);
+        return $this->hasOne(Cities::class, ['id' => 'city_id']);
     }
 
     /**
      * Gets query for [[Country]].
      *
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
      */
-    public function getCountry()
+    public function getCountry(): ActiveQuery
     {
-        return $this->hasOne(Country::class, ['id' => 'country_id']);
+        return $this->hasOne(Countries::class, ['id' => 'country_id']);
     }
 
     /**
      * Gets query for [[Cruises]].
      *
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
      */
-    public function getCruises()
+    public function getCruises(): ActiveQuery
     {
-        return $this->hasMany(Cruise::class, ['port_start_id' => 'id']);
+        return $this->hasMany(Cruises::class, ['port_end_id' => 'id']);
     }
 
     /**
      * Gets query for [[Cruises0]].
      *
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
      */
-    public function getCruises0()
+    public function getCruises0(): ActiveQuery
     {
-        return $this->hasMany(Cruise::class, ['port_end_id' => 'id']);
+        return $this->hasMany(Cruises::class, ['port_start_id' => 'id']);
     }
 
     /**
      * Gets query for [[Docks]].
      *
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
      */
-    public function getDocks()
+    public function getDocks(): ActiveQuery
     {
-        return $this->hasMany(Dock::class, ['port_id' => 'id']);
+        return $this->hasMany(Docks::class, ['port_id' => 'id']);
     }
 }

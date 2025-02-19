@@ -3,9 +3,10 @@
 namespace common\models;
 
 use Yii;
+use yii\db\ActiveQuery;
 
 /**
- * This is the model class for table "dock".
+ * This is the model class for table "docks".
  *
  * @property int $id
  * @property int $port_id
@@ -15,37 +16,36 @@ use Yii;
  * @property string $created_at
  * @property string $updated_at
  *
- * @property Port $port
+ * @property Ports $port
  */
-class Dock extends \yii\db\ActiveRecord
+class Docks extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
      */
-    public static function tableName()
+    public static function tableName(): string
     {
-        return 'dock';
+        return 'docks';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['port_id', 'name'], 'required'],
-            [['port_id'], 'default', 'value' => null],
             [['port_id'], 'integer'],
             [['created_at', 'updated_at'], 'safe'],
             [['name', 'address', 'coordinates'], 'string', 'max' => 255],
-            [['port_id'], 'exist', 'skipOnError' => true, 'targetClass' => Port::class, 'targetAttribute' => ['port_id' => 'id']],
+            [['port_id'], 'exist', 'skipOnError' => true, 'targetClass' => Ports::class, 'targetAttribute' => ['port_id' => 'id']],
         ];
     }
 
     /**
      * {@inheritdoc}
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'id' => 'ID',
@@ -61,10 +61,10 @@ class Dock extends \yii\db\ActiveRecord
     /**
      * Gets query for [[Port]].
      *
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
      */
-    public function getPort()
+    public function getPort(): ActiveQuery
     {
-        return $this->hasOne(Port::class, ['id' => 'port_id']);
+        return $this->hasOne(Ports::class, ['id' => 'port_id']);
     }
 }

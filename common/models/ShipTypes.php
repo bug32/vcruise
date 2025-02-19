@@ -3,53 +3,53 @@
 namespace common\models;
 
 use Yii;
+use yii\db\ActiveQuery;
 
 /**
- * This is the model class for table "type_ship".
+ * This is the model class for table "ship_types".
  *
  * @property int $id
  * @property string $name
  * @property string $slug
- * @property int $status
- * @property int $priority
+ * @property int|null $status
+ * @property int|null $priority
  * @property string|null $icon
  * @property string|null $description
  * @property string $created_at
  * @property string $updated_at
  *
- * @property Ship[] $ships
+ * @property Ships[] $ships
  */
-class TypeShip extends \yii\db\ActiveRecord
+class ShipTypes extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
      */
-    public static function tableName()
+    public static function tableName(): string
     {
-        return 'type_ship';
+        return 'ship_types';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['name', 'slug'], 'required'],
-            [['status', 'priority'], 'default', 'value' => null],
             [['status', 'priority'], 'integer'],
             [['description'], 'string'],
             [['created_at', 'updated_at'], 'safe'],
             [['name', 'slug', 'icon'], 'string', 'max' => 255],
-            [['slug', 'status'], 'unique', 'targetAttribute' => ['slug', 'status']],
             [['slug'], 'unique'],
+            [['slug', 'status'], 'unique', 'targetAttribute' => ['slug', 'status']],
         ];
     }
 
     /**
      * {@inheritdoc}
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'id' => 'ID',
@@ -67,10 +67,10 @@ class TypeShip extends \yii\db\ActiveRecord
     /**
      * Gets query for [[Ships]].
      *
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
      */
-    public function getShips()
+    public function getShips(): ActiveQuery
     {
-        return $this->hasMany(Ship::class, ['typeId' => 'id']);
+        return $this->hasMany(Ships::class, ['typeId' => 'id']);
     }
 }

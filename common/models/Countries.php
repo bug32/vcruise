@@ -3,9 +3,10 @@
 namespace common\models;
 
 use Yii;
+use yii\db\ActiveQuery as ActiveQueryAlias;
 
 /**
- * This is the model class for table "country".
+ * This is the model class for table "countries".
  *
  * @property int $id
  * @property string $name
@@ -16,37 +17,38 @@ use Yii;
  * @property string $created_at
  * @property string $updated_at
  *
- * @property City[] $cities
+ * @property Cities[] $cities
+ * @property Ports[] $ports
  */
-class Country extends \yii\db\ActiveRecord
+class Countries extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
      */
-    public static function tableName()
+    public static function tableName(): string
     {
-        return 'country';
+        return 'countries';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['name', 'slug'], 'required'],
             [['description'], 'string'],
             [['created_at', 'updated_at'], 'safe'],
             [['name', 'slug', 'flag', 'code'], 'string', 'max' => 255],
-            [['code'], 'unique'],
             [['slug'], 'unique'],
+            [['code'], 'unique'],
         ];
     }
 
     /**
      * {@inheritdoc}
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'id' => 'ID',
@@ -63,10 +65,20 @@ class Country extends \yii\db\ActiveRecord
     /**
      * Gets query for [[Cities]].
      *
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQueryAlias
      */
-    public function getCities()
+    public function getCities(): ActiveQueryAlias
     {
-        return $this->hasMany(City::class, ['country_id' => 'id']);
+        return $this->hasMany(Cities::class, ['country_id' => 'id']);
+    }
+
+    /**
+     * Gets query for [[Ports]].
+     *
+     * @return ActiveQueryAlias
+     */
+    public function getPorts(): ActiveQueryAlias
+    {
+        return $this->hasMany(Ports::class, ['country_id' => 'id']);
     }
 }

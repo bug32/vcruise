@@ -3,9 +3,10 @@
 namespace common\models;
 
 use Yii;
+use yii\db\ActiveQuery as ActiveQueryAlias;
 
 /**
- * This is the model class for table "city_media".
+ * This is the model class for table "city_medias".
  *
  * @property int $id
  * @property int $city_id
@@ -17,37 +18,36 @@ use Yii;
  * @property string $created_at
  * @property string $updated_at
  *
- * @property City $city
+ * @property Cities $city
  */
-class CityMedia extends \yii\db\ActiveRecord
+class CityMedias extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
      */
-    public static function tableName()
+    public static function tableName(): string
     {
-        return 'city_media';
+        return 'city_medias';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['city_id', 'url'], 'required'],
-            [['city_id', 'size', 'priority'], 'default', 'value' => null],
             [['city_id', 'size', 'priority'], 'integer'],
             [['created_at', 'updated_at'], 'safe'],
             [['alt', 'mime_type', 'url'], 'string', 'max' => 255],
-            [['city_id'], 'exist', 'skipOnError' => true, 'targetClass' => City::class, 'targetAttribute' => ['city_id' => 'id']],
+            [['city_id'], 'exist', 'skipOnError' => true, 'targetClass' => Cities::class, 'targetAttribute' => ['city_id' => 'id']],
         ];
     }
 
     /**
      * {@inheritdoc}
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'id' => 'ID',
@@ -65,10 +65,10 @@ class CityMedia extends \yii\db\ActiveRecord
     /**
      * Gets query for [[City]].
      *
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQueryAlias
      */
-    public function getCity()
+    public function getCity(): ActiveQueryAlias
     {
-        return $this->hasOne(City::class, ['id' => 'city_id']);
+        return $this->hasOne(Cities::class, ['id' => 'city_id']);
     }
 }
