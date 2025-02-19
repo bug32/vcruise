@@ -13,8 +13,8 @@ class m250109_200605_update_port_table extends Migration
     public function safeUp()
     {
 
-        $this->addColumn('{{%port}}', 'country_id', $this->integer()->notNull()->defaultValue(0));
-        $this->addForeignKey('fk-port-country', '{{%port}}', 'country_id', '{{%country}}', 'id', 'CASCADE');
+        $this->addColumn('{{%ports}}', 'country_id', $this->integer()->notNull()->defaultValue(1));
+        $this->addForeignKey('fk-ports-country', '{{%ports}}', 'country_id', '{{%countries}}', 'id', 'CASCADE');
     }
 
     /**
@@ -22,8 +22,8 @@ class m250109_200605_update_port_table extends Migration
      */
     public function safeDown()
     {
-        $this->dropForeignKey('{{%port}}', 'country_id');
-        $this->dropColumn('{{%port}}', 'country_id');
+        $this->dropForeignKey('{{%ports}}', 'country_id');
+        $this->dropColumn('{{%ports}}', 'country_id');
         echo "m250109_200605_update_port_table cannot be reverted.\n";
 
         return false;

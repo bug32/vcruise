@@ -12,7 +12,7 @@ class m241229_120610_create_river_table extends Migration
      */
     public function safeUp()
     {
-        $this->createTable('{{%river}}', [
+        $this->createTable('{{%rivers}}', [
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),
             'slug' => $this->string()->notNull()->unique(),
@@ -22,10 +22,10 @@ class m241229_120610_create_river_table extends Migration
             'updated_at' => $this->timestamp()->notNull()->defaultExpression(new \yii\db\Expression('NOW()')),
         ]);
 
-        $this->createIndex('idx_river_slug', '{{%river}}', 'slug');
+        $this->createIndex('idx_river_slug', '{{%rivers}}', 'slug');
 
-        $this->insert('{{%river}}', [
-            'id' => 0,
+        $this->insert('{{%rivers}}', [
+            'id' => 1,
             'name' => 'Не указано',
             'slug' => 'not-specified',
         ]);
@@ -36,6 +36,6 @@ class m241229_120610_create_river_table extends Migration
      */
     public function safeDown()
     {
-        $this->dropTable('{{%river}}');
+        $this->dropTable('{{%rivers}}');
     }
 }

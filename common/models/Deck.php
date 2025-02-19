@@ -26,7 +26,7 @@ class Deck extends \yii\db\ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%deck}}';
+        return '{{%decks}}';
     }
 
     /**

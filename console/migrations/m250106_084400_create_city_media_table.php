@@ -3,7 +3,7 @@
 use yii\db\Migration;
 
 /**
- * Handles the creation of table `{{%city_media}}`.
+ * Handles the creation of table `{{%city_medias}}`.
  */
 class m250106_084400_create_city_media_table extends Migration
 {
@@ -12,7 +12,7 @@ class m250106_084400_create_city_media_table extends Migration
      */
     public function safeUp()
     {
-        $this->createTable('{{%city_media}}', [
+        $this->createTable('{{%city_medias}}', [
             'id' => $this->primaryKey(),
 
             'city_id' => $this->integer()->notNull(),
@@ -27,15 +27,15 @@ class m250106_084400_create_city_media_table extends Migration
             'updated_at' => $this->timestamp()->notNull()->defaultExpression(new \yii\db\Expression('NOW()')),
         ]);
 
-        $this->addCommentOnTable('{{%city_media}}', 'Фото и видео достопримечательностей города');
+        $this->addCommentOnTable('{{%city_medias}}', 'Фото и видео достопримечательностей города');
 
-        $this->createIndex('idx_city_media_city_id', '{{%city_media}}', 'city_id');
+        $this->createIndex('idx_city_media_city_id', '{{%city_medias}}', 'city_id');
 
         $this->addForeignKey(
             'fk_city_media_city',
-            '{{%city_media}}',
+            '{{%city_medias}}',
             'city_id',
-            '{{%city}}',
+            '{{%cities}}',
             'id',
             'CASCADE'
         );
@@ -46,6 +46,6 @@ class m250106_084400_create_city_media_table extends Migration
      */
     public function safeDown()
     {
-        $this->dropTable('{{%city_media}}');
+        $this->dropTable('{{%city_medias}}');
     }
 }

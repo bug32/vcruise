@@ -3,7 +3,7 @@
 use yii\db\Migration;
 
 /**
- * Handles the creation of table `{{%city}}`.
+ * Handles the creation of table `{{%cities}}`.
  */
 class m241229_115151_create_city_table extends Migration
 {
@@ -12,7 +12,7 @@ class m241229_115151_create_city_table extends Migration
      */
     public function safeUp()
     {
-        $this->createTable('{{%city}}', [
+        $this->createTable('{{%cities}}', [
             'id'          => $this->primaryKey(),
             'name'        => $this->string()->notNull(),
             'slug'        => $this->string()->notNull()->unique(),
@@ -28,17 +28,17 @@ class m241229_115151_create_city_table extends Migration
             'updated_at' => $this->timestamp()->notNull()->defaultExpression(new \yii\db\Expression('NOW()')),
         ]);
 
-        $this->addCommentOnTable('{{%city}}', 'Города');
+        $this->addCommentOnTable('{{%cities}}', 'Города');
 
-        $this->addForeignKey('fk_city_country', '{{%city}}', 'country_id', '{{%country}}', 'id', 'CASCADE');
+        $this->addForeignKey('fk_city_country', '{{%cities}}', 'country_id', '{{%countries}}', 'id', 'CASCADE');
 
-        $this->createIndex('idx_city_slug', '{{%city}}', 'slug');
+        $this->createIndex('idx_city_slug', '{{%cities}}', 'slug');
 
-        $this->insert('{{%city}}', [
-            'id' => 0,
+        $this->insert('{{%cities}}', [
+            'id' => 1,
             'name' => 'Не указан',
             'slug' => 'not-specified',
-            'country_id' => 0
+            'country_id' => 1
         ]);
     }
 
@@ -47,6 +47,6 @@ class m241229_115151_create_city_table extends Migration
      */
     public function safeDown()
     {
-        $this->dropTable('{{%city}}');
+        $this->dropTable('{{%cities}}');
     }
 }

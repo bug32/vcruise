@@ -29,7 +29,7 @@ class Operator extends \yii\db\ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%operator}}';
+        return '{{%operators}}';
     }
 
     /**

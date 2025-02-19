@@ -29,7 +29,7 @@ class Cabin extends \yii\db\ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%cabin}}';
+        return '{{%cabins}}';
     }
 
     /**

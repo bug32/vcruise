@@ -3,16 +3,16 @@
 use yii\db\Migration;
 
 /**
- * Handles the creation of table `{{%type_ship}}`.
+ * Handles the creation of table `{{%ship_types}}`.
  */
-class m241229_085620_create_type_ship_table extends Migration
+class m241229_085620_create_ship_types_table extends Migration
 {
     /**
      * {@inheritdoc}
      */
     public function safeUp()
     {
-        $this->createTable('{{%type_ship}}', [
+        $this->createTable('{{%ship_types}}', [
             'id'          => $this->primaryKey(),
             'name'        => $this->string()->notNull(),
             'slug'        => $this->string()->notNull()->unique(),
@@ -24,13 +24,13 @@ class m241229_085620_create_type_ship_table extends Migration
             'updated_at'  => $this->timestamp()->notNull()->defaultExpression(new \yii\db\Expression('NOW()')),
         ]);
 
-        $this->addCommentOnTable('{{%type_ship}}', 'Типы кораблей');
+        $this->addCommentOnTable('{{%ship_types}}', 'Типы кораблей');
 
-        $this->createIndex('idx_type_ship_slug-status', '{{%type_ship}}', ['slug', 'status'], TRUE);
-        $this->createIndex('idx_type_ship_status', '{{%type_ship}}', 'status');
+        $this->createIndex('idx_type_ship_slug-status', '{{%ship_types}}', ['slug', 'status'], TRUE);
+        $this->createIndex('idx_type_ship_status', '{{%ship_types}}', 'status');
 
-        $this->insert('{{%type_ship}}', [
-            'id' => 0,
+        $this->insert('{{%ship_types}}', [
+            'id' => 1,
             'name' => 'Не указано',
             'slug' => 'not-specified',
             'status' => 10,
@@ -43,6 +43,6 @@ class m241229_085620_create_type_ship_table extends Migration
      */
     public function safeDown()
     {
-        $this->dropTable('{{%type_ship}}');
+        $this->dropTable('{{%ship_types}}');
     }
 }

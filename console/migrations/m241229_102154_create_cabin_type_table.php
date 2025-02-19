@@ -3,7 +3,7 @@
 use yii\db\Migration;
 
 /**
- * Handles the creation of table `{{%cabin_type}}`.
+ * Handles the creation of table `{{%cabin_types}}`.
  */
 class m241229_102154_create_cabin_type_table extends Migration
 {
@@ -12,7 +12,7 @@ class m241229_102154_create_cabin_type_table extends Migration
      */
     public function safeUp()
     {
-        $this->createTable('{{%cabin_type}}', [
+        $this->createTable('{{%cabin_types}}', [
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),
             'description' => $this->text(),
@@ -25,9 +25,9 @@ class m241229_102154_create_cabin_type_table extends Migration
             'updated_at' => $this->timestamp()->notNull()->defaultExpression(new \yii\db\Expression('NOW()')),
         ]);
 
-        $this->addCommentOnTable('{{%cabin_type}}', 'Типы кают');
+        $this->addCommentOnTable('{{%cabin_types}}', 'Типы кают');
 
-        $this->addForeignKey('fk_cabin_type_ship', '{{%cabin_type}}', 'ship_id', '{{%ship}}', 'id', 'CASCADE');
+        $this->addForeignKey('fk_cabin_type_ship', '{{%cabin_types}}', 'ship_id', '{{%ships}}', 'id', 'CASCADE');
     }
 
     /**
@@ -35,6 +35,6 @@ class m241229_102154_create_cabin_type_table extends Migration
      */
     public function safeDown()
     {
-        $this->dropTable('{{%cabin_type}}');
+        $this->dropTable('{{%cabin_types}}');
     }
 }

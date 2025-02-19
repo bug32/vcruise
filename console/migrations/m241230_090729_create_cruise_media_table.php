@@ -3,7 +3,7 @@
 use yii\db\Migration;
 
 /**
- * Handles the creation of table `{{%cruise_media}}`.
+ * Handles the creation of table `{{%cruise_medias}}`.
  */
 class m241230_090729_create_cruise_media_table extends Migration
 {
@@ -12,7 +12,7 @@ class m241230_090729_create_cruise_media_table extends Migration
      */
     public function safeUp()
     {
-        $this->createTable('{{%cruise_media}}', [
+        $this->createTable('{{%cruise_medias}}', [
             'id' => $this->primaryKey(),
             'cruise_id' => $this->integer()->notNull(),
             'alt' => $this->string(),
@@ -33,6 +33,6 @@ class m241230_090729_create_cruise_media_table extends Migration
      */
     public function safeDown()
     {
-        $this->dropTable('{{%cruise_media}}');
+        $this->dropTable('{{%cruise_medias}}');
     }
 }

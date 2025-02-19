@@ -3,7 +3,7 @@
 use yii\db\Migration;
 
 /**
- * Handles the creation of table `{{%port}}`.
+ * Handles the creation of table `{{%ports}}`.
  */
 class m241230_080015_create_port_table extends Migration
 {
@@ -12,11 +12,11 @@ class m241230_080015_create_port_table extends Migration
      */
     public function safeUp()
     {
-        $this->createTable('{{%port}}', [
+        $this->createTable('{{%ports}}', [
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),
             'slug' => $this->string()->notNull()->unique(),
-            'city_id' => $this->integer()->notNull()->defaultValue(0),
+            'city_id' => $this->integer()->notNull()->defaultValue(1),
             'description' => $this->text(),
             'address' => $this->string(),
 
@@ -27,15 +27,15 @@ class m241230_080015_create_port_table extends Migration
             'updated_at' => $this->timestamp()->notNull()->defaultExpression(new \yii\db\Expression('NOW()')),
         ]);
 
-        $this->addCommentOnTable('{{%port}}', 'Порты');
+        $this->addCommentOnTable('{{%ports}}', 'Порты');
 
-        $this->addForeignKey('fk-port-city_id', '{{%port}}', 'city_id', '{{%city}}', 'id');
+        $this->addForeignKey('fk-port-city_id', '{{%ports}}', 'city_id', '{{%cities}}', 'id');
 
 
-        $this->insert('{{%port}}', [
+        $this->insert('{{%ports}}', [
             'name' => 'Не указан',
             'slug' => 'unknown',
-            'city_id' => 0
+            'city_id' => 1
         ]);
 
     }
@@ -45,6 +45,6 @@ class m241230_080015_create_port_table extends Migration
      */
     public function safeDown()
     {
-        $this->dropTable('{{%port}}');
+        $this->dropTable('{{%ports}}');
     }
 }

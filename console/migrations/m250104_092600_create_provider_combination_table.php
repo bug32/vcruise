@@ -3,7 +3,7 @@
 use yii\db\Migration;
 
 /**
- * Handles the creation of table `{{%provider_combination}}`.
+ * Handles the creation of table `{{%provider_combinations}}`.
  */
 class m250104_092600_create_provider_combination_table extends Migration
 {
@@ -12,7 +12,7 @@ class m250104_092600_create_provider_combination_table extends Migration
      */
     public function safeUp()
     {
-        $this->createTable('{{%provider_combination}}', [
+        $this->createTable('{{%provider_combinations}}', [
             'id'            => $this->primaryKey(),
             'provider_name' => $this->string()->notNull(),
             'foreign_id'    => $this->integer()->notNull(),
@@ -23,17 +23,17 @@ class m250104_092600_create_provider_combination_table extends Migration
             'updated_at' => $this->timestamp()->notNull()->defaultExpression(new \yii\db\Expression('NOW()')),
         ]);
 
-        $this->addCommentOnTable('{{%provider_combination}}', 'Комбинации ID сущностей провайдеров и ID внутри системы');
+        $this->addCommentOnTable('{{%provider_combinations}}', 'Комбинации ID сущностей провайдеров и ID внутри системы');
 
         $this->createIndex(
             'idx_provider_combination_all-foreign',
-            '{{%provider_combination}}',
+            '{{%provider_combinations}}',
             ['foreign_id', 'model_name', 'provider_name']
         );
 
         $this->createIndex(
             'idx_provider_combination_all-internal',
-            '{{%provider_combination}}',
+            '{{%provider_combinations}}',
              ['internal_id', 'model_name', 'provider_name']
         );
     }
@@ -43,6 +43,6 @@ class m250104_092600_create_provider_combination_table extends Migration
      */
     public function safeDown()
     {
-        $this->dropTable('{{%provider_combination}}');
+        $this->dropTable('{{%provider_combinations}}');
     }
 }

@@ -3,7 +3,7 @@
 use yii\db\Migration;
 
 /**
- * Handles the creation of table `{{%dock}}`.
+ * Handles the creation of table `{{%docks}}`.
  */
 class m250109_200142_create_dock_table extends Migration
 {
@@ -12,7 +12,7 @@ class m250109_200142_create_dock_table extends Migration
      */
     public function safeUp()
     {
-        $this->createTable('{{%dock}}', [
+        $this->createTable('{{%docks}}', [
             'id' => $this->primaryKey(),
             'port_id' => $this->integer()->notNull(),
             'name' => $this->string()->notNull(),
@@ -23,9 +23,9 @@ class m250109_200142_create_dock_table extends Migration
             'updated_at' => $this->timestamp()->notNull()->defaultExpression(new \yii\db\Expression('NOW()')),
         ]);
 
-        $this->addCommentOnTable('dock', 'Портовые доки');
+        $this->addCommentOnTable('{{%docks}}', 'Портовые доки');
 
-        $this->addForeignKey('fk_dock_port', 'dock', 'port_id', 'port', 'id', 'CASCADE');
+        $this->addForeignKey('fk_dock_port', '{{%docks}}', 'port_id', '{{%ports}}', 'id', 'CASCADE');
     }
 
     /**
@@ -33,6 +33,6 @@ class m250109_200142_create_dock_table extends Migration
      */
     public function safeDown()
     {
-        $this->dropTable('{{%dock}}');
+        $this->dropTable('{{%docks}}');
     }
 }

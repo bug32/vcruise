@@ -3,7 +3,7 @@
 use yii\db\Migration;
 
 /**
- * Handles the creation of table `{{%suggestion}}`.
+ * Handles the creation of table `{{%suggestions}}`.
  */
 class m241229_121311_create_suggestion_table extends Migration
 {
@@ -12,7 +12,7 @@ class m241229_121311_create_suggestion_table extends Migration
      */
     public function safeUp()
     {
-        $this->createTable('{{%suggestion}}', [
+        $this->createTable('{{%suggestions}}', [
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),
             'slug' => $this->string()->notNull()->unique(),
@@ -24,9 +24,9 @@ class m241229_121311_create_suggestion_table extends Migration
             'updated_at' => $this->timestamp()->notNull()->defaultExpression(new \yii\db\Expression('NOW()')),
         ]);
 
-        $this->addCommentOnTable('{{%suggestion}}', 'Дополнительно на борту');
+        $this->addCommentOnTable('{{%suggestions}}', 'Дополнительно на борту');
 
-        $this->createIndex('idx_suggestion_slug', '{{%suggestion}}', 'slug');
+        $this->createIndex('idx_suggestion_slug', '{{%suggestions}}', 'slug');
     }
 
     /**
@@ -34,6 +34,6 @@ class m241229_121311_create_suggestion_table extends Migration
      */
     public function safeDown()
     {
-        $this->dropTable('{{%suggestion}}');
+        $this->dropTable('{{%suggestions}}');
     }
 }

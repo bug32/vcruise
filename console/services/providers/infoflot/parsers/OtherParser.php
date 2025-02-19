@@ -385,7 +385,7 @@ class OtherParser extends InfoflotAPI
             return $temp['id'];
         }
 
-        Yii::$app->db->createCommand()->insert('{{%city}}', [
+        Yii::$app->db->createCommand()->insert('{{%cities}}', [
             'name'       => $city,
             'slug'       => $slug,
             'country_id' => $countryId,

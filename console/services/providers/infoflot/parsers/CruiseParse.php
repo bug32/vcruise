@@ -29,8 +29,8 @@ class CruiseParse extends InfoflotAPI
         while ($nextPage) {
             try {
                 $cruises = $this->request('/cruises', ['page' => $page, 'limit' => 100]);
-            }catch (Throwable $e){
-                echo' Error GET cruises: ' . $e->getMessage().PHP_EOL;
+            } catch (Throwable $e) {
+                echo ' Error GET cruises: ' . $e->getMessage() . PHP_EOL;
                 print_r(['page' => $page, 'limit' => 20]);
                 die();
             }
@@ -44,61 +44,64 @@ class CruiseParse extends InfoflotAPI
 
             foreach ($cruises['data'] as $item) {
                 try {
-                $cruise = $this->request('/cruises/' . $item['id']);
-                //  $cabins = $this->request('/cruises/' . $item['id'] . '/cabins');
+                    $cruise = $this->request('/cruises/' . $item['id']);
+                    //  $cabins = $this->request('/cruises/' . $item['id'] . '/cabins');
 
-                $check = ProviderCombination::findOne([
-                    'provider_name' => self::PROVIDER_NAME,
-                    'foreign_id'    => $item['id'],
-                    'model_name'    => self::PROVIDER_MODEL_NAME_CRUISE]);
-
-                $title = $this->clearText($cruise['beautifulName']);
-
-                $slug   = $this->getSlug($cruise);
-                $params = [
-                    'name'                 => $title,
-                    'slug'                 => $slug,
-                    'route'                => $this->clearText($cruise['route'] ?? $cruise['routeShort']),
-                    'route_short'          => $this->clearText($cruise['routeShort']),
-                    'date_start'           => $cruise['dateStart'],
-                    'date_end'             => $cruise['dateEnd'],
-                    'date_start_timestamp' => $cruise['dateStartTimestamp'],
-                    'date_end_timestamp'   => $cruise['dateEndTimestamp'],
-                    'days'                 => $cruise['days'],
-                    'nights'               => $cruise['nights'],
-                    'min_price'            => $cruise['min_price'],
-                    'max_price'            => $cruise['max_price'],
-                    'currency'             => $cruise['currency'],
-                    'free_cabins'          => $cruise['freeCabins'],
-                    'ship_id'              => $this->getShipId($cruise['ship'] ?? []),
-                    'port_start_id'        => $this->getPortId($cruise['portStart'] ?? ''),
-                    'port_end_id'          => $this->getPortId($cruise['portEnd'] ?? ''),
-                    'city_start_id'        => $this->getCityId($cruise['startCity'] ?? ''),
-                    'city_end_id'          => $this->getCityId($cruise['endCity'] ?? ''),
-                    'map'                  => $cruise['map'],
-                    'timetable_json'       => $this->getTimetableJson($cruise['timetable'] ?? []),
-                    'cabins_json'          => json_encode([], JSON_THROW_ON_ERROR) //$this->getCabinsJson($cabins)
-                ];
-
-                if ($check) {
-                    \Yii::$app->db->createCommand()->update('{{%cruise}}', $params, ['id' => $check['internal_id']])->execute();
-                } else {
-                    \Yii::$app->db->createCommand()->insert('{{%cruise}}', $params)->execute();
-                    $cruiseNew = \Yii::$app->db->createCommand("SELECT id FROM cruise WHERE slug=:slug", ['slug' => $slug])->queryOne();
-
-                    \Yii::$app->db->createCommand()->insert('provider_combination', [
+                    $check = ProviderCombination::findOne([
                         'provider_name' => self::PROVIDER_NAME,
-                        'foreign_id'    => $cruise['id'],
-                        'model_name'    => self::PROVIDER_MODEL_NAME_CRUISE,
-                        'internal_id'   => $cruiseNew['id'],
-                    ])->execute();
-                }
+                        'foreign_id'    => $item['id'],
+                        'model_name'    => self::PROVIDER_MODEL_NAME_CRUISE]);
 
-                echo 'ADD cruise ID :' . $cruise['id'] . PHP_EOL;
-                echo "Internal ID :" . ($cruiseNew['id'] ?? $check['internal_id']) . PHP_EOL;
+                    $title = $this->clearText($cruise['beautifulName']);
+
+                    $type_id = $this->getTypeId($cruise);
+
+                    $slug   = $this->getSlug($cruise);
+                    $params = [
+                        'name'                 => $title,
+                        'slug'                 => $slug,
+                        'route'                => $this->clearText($cruise['route'] ?? $cruise['routeShort']),
+                        'route_short'          => $this->clearText($cruise['routeShort']),
+                        'date_start'           => $cruise['dateStart'],
+                        'date_end'             => $cruise['dateEnd'],
+                        'date_start_timestamp' => $cruise['dateStartTimestamp'],
+                        'date_end_timestamp'   => $cruise['dateEndTimestamp'],
+                        'days'                 => $cruise['days'],
+                        'type_id'              => $type_id,
+                        'nights'               => $cruise['nights'],
+                        'min_price'            => $cruise['min_price'],
+                        'max_price'            => $cruise['max_price'],
+                        'currency'             => $cruise['currency'],
+                        'free_cabins'          => $cruise['freeCabins'],
+                        'ship_id'              => $this->getShipId($cruise['ship'] ?? []),
+                        'port_start_id'        => $this->getPortId($cruise['portStart'] ?? ''),
+                        'port_end_id'          => $this->getPortId($cruise['portEnd'] ?? ''),
+                        'city_start_id'        => $this->getCityId($cruise['startCity'] ?? ''),
+                        'city_end_id'          => $this->getCityId($cruise['endCity'] ?? ''),
+                        'map'                  => $cruise['map'],
+                        'timetable_json'       => $this->getTimetableJson($cruise['timetable'] ?? []),
+                        'cabins_json'          => json_encode([], JSON_THROW_ON_ERROR) //$this->getCabinsJson($cabins)
+                    ];
+
+                    if ($check) {
+                        \Yii::$app->db->createCommand()->update('{{%cruises}}', $params, ['id' => $check['internal_id']])->execute();
+                    } else {
+                        \Yii::$app->db->createCommand()->insert('{{%cruises}}', $params)->execute();
+                        $cruiseNew = \Yii::$app->db->createCommand("SELECT id FROM cruise WHERE slug=:slug", ['slug' => $slug])->queryOne();
+
+                        \Yii::$app->db->createCommand()->insert('provider_combination', [
+                            'provider_name' => self::PROVIDER_NAME,
+                            'foreign_id'    => $cruise['id'],
+                            'model_name'    => self::PROVIDER_MODEL_NAME_CRUISE,
+                            'internal_id'   => $cruiseNew['id'],
+                        ])->execute();
+                    }
+
+                    echo 'ADD cruise ID :' . $cruise['id'] . PHP_EOL;
+                    echo "Internal ID :" . ($cruiseNew['id'] ?? $check['internal_id']) . PHP_EOL;
 
                 } catch (Throwable $e) {
-                    echo "Error ". $e->getMessage() . PHP_EOL;
+                    echo "Error " . $e->getMessage() . PHP_EOL;
                     continue;
                 }
             }
@@ -288,5 +291,32 @@ class CruiseParse extends InfoflotAPI
         }
 
         return ArrayHelper::index($result, 'foreign_id');
+    }
+
+
+    // Тип круиза
+
+    /**
+     * @throws Exception
+     */
+    protected function getTypeId($cruise): int
+    {   // тип 0 - значение не выбрано.
+        if( empty($cruise['type']['name']) ) {
+            return 0;
+        }
+
+        $typeName = trim($cruise['type']['name']);
+        $result   = \Yii::$app->db->createCommand('SELECT * FROM cruise_type WHERE name="' . $typeName . '"')->queryOne();
+
+        if( empty($result) ) {
+            \Yii::$app->db->createCommand()->insert('cruise_type', [
+                'name' => $typeName,
+                'slug' => Inflector::slug($typeName),
+            ])->execute();
+
+            $result = \Yii::$app->db->createCommand('SELECT * FROM cruise_type WHERE name="' . $typeName . '"')->queryOne();
+        }
+
+        return $result['id'];
     }
 }

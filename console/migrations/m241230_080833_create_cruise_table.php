@@ -3,7 +3,7 @@
 use yii\db\Migration;
 
 /**
- * Handles the creation of table `{{%cruise}}`.
+ * Handles the creation of table `{{%cruises}}`.
  */
 class m241230_080833_create_cruise_table extends Migration
 {
@@ -12,14 +12,13 @@ class m241230_080833_create_cruise_table extends Migration
      */
     public function safeUp()
     {
-        $this->createTable('{{%cruise}}', [
+        $this->createTable('{{%cruises}}', [
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),
             'slug' => $this->string()->notNull()->unique(),
             'route' => $this->text()->notNull(),
             'route_short' => $this->text(),
             'description' => $this->text(),
-            'type' => $this->string()->defaultValue(0)->comment('Круиз Речной или Морской'),
             'include' => $this->text()->comment('Включено'),
             'additional' => $this->text()->comment('Дополнительно'),
             'discounts' => $this->text()->comment('Скидки'),
@@ -41,12 +40,12 @@ class m241230_080833_create_cruise_table extends Migration
 
             'ship_id' => $this->integer()->notNull(),
 
-            'port_start_id' => $this->integer()->defaultValue(0), // 'port_id'
-            'port_end_id' => $this->integer()->defaultValue(0), // 'port_id'
+            'port_start_id' => $this->integer()->defaultValue(1), // 'port_id'
+            'port_end_id' => $this->integer()->defaultValue(1), // 'port_id'
             'dock_start' => $this->string(),
 
-            'city_start_id' => $this->integer()->notNull()->defaultValue(0), // 'city_id'
-            'city_end_id' => $this->integer()->notNull()->defaultValue(0), // 'city_id'
+            'city_start_id' => $this->integer()->notNull()->defaultValue(1), // 'city_id'
+            'city_end_id' => $this->integer()->notNull()->defaultValue(1), // 'city_id'
 
             'cabins_json' => $this->json()->comment('Свободные каюты'),
             'timetable_json' => $this->json()->comment('Расписание'),
@@ -55,25 +54,25 @@ class m241230_080833_create_cruise_table extends Migration
             'updated_at' => $this->timestamp()->notNull()->defaultExpression(new \yii\db\Expression('NOW()')),
         ]);
 
-        $this->addCommentOnTable('{{%cruise}}', 'Маршруты');
+        $this->addCommentOnTable('{{%cruises}}', 'Маршруты');
 
-        $this->addForeignKey('fk_cruise_ship', '{{%cruise}}', 'ship_id', '{{%ship}}', 'id', 'CASCADE');
-        $this->addForeignKey('fk_cruise_port_start', '{{%cruise}}', 'port_start_id', '{{%port}}', 'id', 'CASCADE');
-        $this->addForeignKey('fk_cruise_port_end', '{{%cruise}}', 'port_end_id', '{{%port}}', 'id', 'CASCADE');
-        $this->addForeignKey('fk_cruise_city_start', '{{%cruise}}', 'city_start_id', '{{%city}}', 'id', 'CASCADE');
-        $this->addForeignKey('fk_cruise_city_end', '{{%cruise}}', 'city_end_id', '{{%city}}', 'id', 'CASCADE');
+        $this->addForeignKey('fk_cruise_ship', '{{%cruises}}', 'ship_id', '{{%ships}}', 'id', 'CASCADE');
+        $this->addForeignKey('fk_cruise_port_start', '{{%cruises}}', 'port_start_id', '{{%ports}}', 'id', 'CASCADE');
+        $this->addForeignKey('fk_cruise_port_end', '{{%cruises}}', 'port_end_id', '{{%ports}}', 'id', 'CASCADE');
+        $this->addForeignKey('fk_cruise_city_start', '{{%cruises}}', 'city_start_id', '{{%cities}}', 'id', 'CASCADE');
+        $this->addForeignKey('fk_cruise_city_end', '{{%cruises}}', 'city_end_id', '{{%cities}}', 'id', 'CASCADE');
 
-        $this->createIndex('idx_cruise_port_start', '{{%cruise}}', 'port_start_id');
-        $this->createIndex('idx_cruise_port_end', '{{%cruise}}', 'port_end_id');
-        $this->createIndex('idx_cruise_city_start', '{{%cruise}}', 'city_start_id');
-        $this->createIndex('idx_cruise_city_end', '{{%cruise}}', 'city_end_id');
+        $this->createIndex('idx_cruise_port_start', '{{%cruises}}', 'port_start_id');
+        $this->createIndex('idx_cruise_port_end', '{{%cruises}}', 'port_end_id');
+        $this->createIndex('idx_cruise_city_start', '{{%cruises}}', 'city_start_id');
+        $this->createIndex('idx_cruise_city_end', '{{%cruises}}', 'city_end_id');
 
-        $this->createIndex('idx_cruise_ship', '{{%cruise}}', 'ship_id');
+        $this->createIndex('idx_cruise_ship', '{{%cruises}}', 'ship_id');
 
-        $this->createIndex('idx_cruise_slug', '{{%cruise}}', 'slug');
+        $this->createIndex('idx_cruise_slug', '{{%cruises}}', 'slug');
 
-        $this->createIndex('idx_cruise_date_start-end', '{{%cruise}}', ['date_start', 'date_end']);
-        $this->createIndex('idx_cruise_date_end', '{{%cruise}}', 'date_end');
+        $this->createIndex('idx_cruise_date_start-end', '{{%cruises}}', ['date_start', 'date_end']);
+        $this->createIndex('idx_cruise_date_end', '{{%cruises}}', 'date_end');
 
     }
 
@@ -83,12 +82,12 @@ class m241230_080833_create_cruise_table extends Migration
     public function safeDown()
     {
 
-        $this->dropForeignKey('fk_cruise_ship', '{{%cruise}}');
-        $this->dropForeignKey('fk_cruise_port_start', '{{%cruise}}');
-        $this->dropForeignKey('fk_cruise_port_end', '{{%cruise}}');
-        $this->dropForeignKey('fk_cruise_city_start', '{{%cruise}}');
-        $this->dropForeignKey('fk_cruise_city_end', '{{%cruise}}');
+        $this->dropForeignKey('fk_cruise_ship', '{{%cruises}}');
+        $this->dropForeignKey('fk_cruise_port_start', '{{%cruises}}');
+        $this->dropForeignKey('fk_cruise_port_end', '{{%cruises}}');
+        $this->dropForeignKey('fk_cruise_city_start', '{{%cruises}}');
+        $this->dropForeignKey('fk_cruise_city_end', '{{%cruises}}');
 
-        $this->dropTable('{{%cruise}}');
+        $this->dropTable('{{%cruises}}');
     }
 }

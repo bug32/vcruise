@@ -22,6 +22,14 @@ use Yii;
  */
 class ShipMedia extends \yii\db\ActiveRecord
 {
+
+    public const KEY_GALLERY = 'gallery';
+    public const KEY_PHOTO = 'photo';
+    public const KEY_SCHEME = 'scheme';
+    public const KEY_CAPTAIN = 'captainPhoto';
+    public const KEY_DIRECTOR = 'cruiseDirectorPhoto';
+    public const KEY_RESTAURANT_DIRECTOR = 'restaurantDirectorPhoto';
+
     /**
      * {@inheritdoc}
      */

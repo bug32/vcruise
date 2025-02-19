@@ -24,7 +24,7 @@ return [
             'csrfParam' => '_csrf-frontend',
         ],
         'assetManager' => [
-            'appendTimestamp' => true,
+            'appendTimestamp' => TRUE,
             'bundles'         => [
                 '\yii\bootstrap5\BootstrapPluginAsset' => [
                     'js' => []
@@ -38,20 +38,20 @@ return [
         'view'         => [
             'class'           => frontend\components\View::class,
             'enableMinify'    => YII_ENV_PROD,
-            'concatCss'       => true, // concatenate css
-            'minifyCss'       => true, // minification css
-            'concatJs'        => true, // concatenate js
-            'minifyJs'        => true, // minification js
-            'minifyOutput'    => true, // minification result html page
-            'webPath'         => '@web', // path alias to web base
-            'basePath'        => '@webroot', // path alias to web base
-            'minifyPath'      => '@webroot/minify', // path alias to save minify result
+            'concatCss'       => TRUE,                     // concatenate css
+            'minifyCss'       => TRUE,                     // minification css
+            'concatJs'        => TRUE,                     // concatenate js
+            'minifyJs'        => TRUE,                     // minification js
+            'minifyOutput'    => TRUE,                     // minification result html page
+            'webPath'         => '@web',                   // path alias to web base
+            'basePath'        => '@webroot',               // path alias to web base
+            'minifyPath'      => '@webroot/minify',        // path alias to save minify result
             'jsPosition'      => [\yii\web\View::POS_END], // positions of js files to be minified
-            'forceCharset'    => 'UTF-8', // charset forcibly assign, otherwise will use all the files found charset
-            'expandImports'   => true, // whether to change @import on content
-            'compressOptions' => ['extra' => true], // options for compress
+            'forceCharset'    => 'UTF-8',                  // charset forcibly assign, otherwise will use all the files found charset
+            'expandImports'   => TRUE,                     // whether to change @import on content
+            'compressOptions' => ['extra' => TRUE],        // options for compress
             'excludeFiles'    => [
-                'jquery.js', // exclude this file from minification
+                'jquery.js',   // exclude this file from minification
                 'app-[^.].js', // you may use regexp
             ],
             'excludeBundles'  => [
@@ -61,8 +61,8 @@ return [
 
         'user'         => [
             'identityClass'   => 'common\models\User',
-            'enableAutoLogin' => true,
-            'identityCookie'  => ['name' => '_identity-frontend', 'httpOnly' => true],
+            'enableAutoLogin' => TRUE,
+            'identityCookie'  => ['name' => '_identity-frontend', 'httpOnly' => TRUE],
         ],
         'session'      => [
             // this is the name of the session cookie used for login on the frontend
@@ -89,20 +89,24 @@ return [
         'urlManager' => [
             'class'               => yii\web\UrlManager::class,
             'baseUrl'             => '/',
-            'enablePrettyUrl'     => true,
-            'showScriptName'      => false,
-            'enableStrictParsing' => false,
-         //   'suffix' => '/',
+            'enablePrettyUrl'     => TRUE,
+            'showScriptName'      => FALSE,
+            'enableStrictParsing' => FALSE,
+            //   'suffix' => '/',
             'normalizer'          => [
-                'class'  => UrlNormalizer::class,
+                'class' => UrlNormalizer::class,
             ],
             'rules'               => [
-                '/' => 'site/index',
+                '/'     => 'site/index',
                 'login' => 'site/login',
-                '<controller:\w+>/<id:\d+>' => '<controller>/view',
+
+                'cruises' => 'cruise/index',
+                'cruises/<action:\w+>' => 'cruise/<action>',
+                'cruise/<slug>-<id>' => 'cruise/view',
+
+                '<controller:\w+>/<id:\d+>'              => '<controller>/view',
                 '<controller:\w+>/<action:\w+>/<id:\d+>' => '<controller>/<action>',
-                '<controller:\w+>/<action:\w+>' => '<controller>/<action>',
-                    
+                '<controller:\w+>/<action:\w+>'          => '<controller>/<action>',
             ],
         ],
 

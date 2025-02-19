@@ -13,6 +13,7 @@ use Yii;
  * @property string $route
  * @property string|null $route_short
  * @property string|null $description
+ * @property int $type_id
  * @property string|null $include Включено
  * @property string|null $additional Дополнительно
  * @property string|null $discounts Скидки
@@ -52,6 +53,7 @@ use Yii;
  * @property River[] $rivers
  * @property Ship $ship
  * @property Suggestion[] $suggestions
+ * @property CruiseType $type
  */
 class Cruise extends \yii\db\ActiveRecord
 {
@@ -252,5 +254,15 @@ class Cruise extends \yii\db\ActiveRecord
     public function getSuggestions()
     {
         return $this->hasMany(Suggestion::class, ['id' => 'suggestion_id'])->viaTable('cruise_suggestion_relation', ['cruise_id' => 'id']);
+    }
+
+    /**
+     * Gets query for [[Type]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getType()
+    {
+        return $this->hasOne(CruiseType::class, ['id' => 'type_id']);
     }
 }

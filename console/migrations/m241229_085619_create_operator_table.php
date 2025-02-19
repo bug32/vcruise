@@ -3,7 +3,7 @@
 use yii\db\Migration;
 
 /**
- * Handles the creation of table `{{%operator}}`.
+ * Handles the creation of table `{{%operators}}`.
  */
 class m241229_085619_create_operator_table extends Migration
 {
@@ -12,7 +12,7 @@ class m241229_085619_create_operator_table extends Migration
      */
     public function safeUp()
     {
-        $this->createTable('{{%operator}}', [
+        $this->createTable('{{%operators}}', [
             'id'          => $this->primaryKey(),
             'name'        => $this->string()->notNull(),
             'slug'        => $this->string()->notNull()->unique(),
@@ -28,17 +28,17 @@ class m241229_085619_create_operator_table extends Migration
             'updated_at' => $this->timestamp()->notNull()->defaultExpression(new \yii\db\Expression('NOW()')),
         ]);
 
-        $this->addCommentOnTable('{{%operator}}', 'Операторы');
+        $this->addCommentOnTable('{{%operators}}', 'Операторы');
 
         $this->createIndex(
             'idx-operator-status',
-            'operator',
+            '{{%operators}}',
             'status'
         );
-        $this->createIndex('idx_operator_slug-status', '{{%operator}}', ['slug', 'status'], TRUE);
+        $this->createIndex('idx_operator_slug-status', '{{%operators}}', ['slug', 'status'], TRUE);
 
-        $this->insert('{{%operator}}', [
-            'id' => 0,
+        $this->insert('{{%operators}}', [
+            'id' => 1,
             'name' => 'Не указан',
             'slug' => 'not-specified',
             'status' => 10
@@ -50,6 +50,6 @@ class m241229_085619_create_operator_table extends Migration
      */
     public function safeDown()
     {
-        $this->dropTable('{{%operator}}');
+        $this->dropTable('{{%operators}}');
     }
 }

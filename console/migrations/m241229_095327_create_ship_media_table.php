@@ -3,7 +3,7 @@
 use yii\db\Migration;
 
 /**
- * Handles the creation of table `{{%ship_media}}`.
+ * Handles the creation of table `{{%ship_medias}}`.
  */
 class m241229_095327_create_ship_media_table extends Migration
 {
@@ -14,7 +14,7 @@ class m241229_095327_create_ship_media_table extends Migration
     {
         /*
          * key - для объединения картинок в группы по ключу ( напимер фото капитана, фото бара и тд )         * */
-        $this->createTable('{{%ship_media}}', [
+        $this->createTable('{{%ship_medias}}', [
             'id' => $this->primaryKey(),
             'ship_id' => $this->integer(),
 
@@ -31,10 +31,10 @@ class m241229_095327_create_ship_media_table extends Migration
             'updated_at' => $this->timestamp()->notNull()->defaultExpression(new \yii\db\Expression('NOW()')),
         ]);
 
-        $this->addCommentOnTable('{{%ship_media}}', 'Медиа связанное с кораблем, каютами и т.д.');
+        $this->addCommentOnTable('{{%ship_medias}}', 'Медиа связанное с кораблем, каютами и т.д.');
 
-        $this->addForeignKey('fk_ship_media_ship_id', '{{%ship_media}}', 'ship_id', '{{%ship}}', 'id', 'CASCADE');
-        $this->createIndex('idx_ship_media_ship_id-key', '{{%ship_media}}', ['ship_id', 'key']);
+        $this->addForeignKey('fk_ship_media_ship_id', '{{%ship_medias}}', 'ship_id', '{{%ships}}', 'id', 'CASCADE');
+        $this->createIndex('idx_ship_media_ship_id-key', '{{%ship_medias}}', ['ship_id', 'key']);
     }
 
     /**
@@ -42,8 +42,8 @@ class m241229_095327_create_ship_media_table extends Migration
      */
     public function safeDown()
     {
-        $this->dropForeignKey('fk_ship_media_ship_id', '{{%ship_media}}');
+        $this->dropForeignKey('fk_ship_media_ship_id', '{{%ship_medias}}');
 
-        $this->dropTable('{{%ship_media}}');
+        $this->dropTable('{{%ship_medias}}');
     }
 }

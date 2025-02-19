@@ -3,7 +3,7 @@
 use yii\db\Migration;
 
 /**
- * Handles the creation of table `{{%country}}`.
+ * Handles the creation of table `{{%countries}}`.
  */
 class m241229_115111_create_country_table extends Migration
 {
@@ -12,7 +12,7 @@ class m241229_115111_create_country_table extends Migration
      */
     public function safeUp()
     {
-        $this->createTable('{{%country}}', [
+        $this->createTable('{{%countries}}', [
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),
             'slug' => $this->string()->notNull()->unique(),
@@ -24,10 +24,10 @@ class m241229_115111_create_country_table extends Migration
             'updated_at' => $this->timestamp()->notNull()->defaultExpression(new \yii\db\Expression('NOW()')),
         ]);
 
-        $this->addCommentOnTable('{{%country}}', 'Страны');
+        $this->addCommentOnTable('{{%countries}}', 'Страны');
 
-        $this->insert('{{%country}}', [
-            'id' => 0,
+        $this->insert('{{%countries}}', [
+            'id' => 1,
             'name' => 'Не указан',
             'slug' => 'not-specified',
         ]);
@@ -38,6 +38,6 @@ class m241229_115111_create_country_table extends Migration
      */
     public function safeDown()
     {
-        $this->dropTable('{{%country}}');
+        $this->dropTable('{{%countries}}');
     }
 }

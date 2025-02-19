@@ -37,7 +37,7 @@ class ShipParser extends InfoflotAPI
      * @throws RandomException
      * @throws Exception
      */
-    public function run(): bool
+    public function run($updatePhoto = false): bool
     {
 
         set_time_limit(0);
@@ -138,7 +138,13 @@ class ShipParser extends InfoflotAPI
                                 'internal_id'   => $internalId,
                                 'model_name'    => self::PROVIDER_MODEL_NAME_SHIP
                             ])->execute();
-                        $this->savePhotos($ship, $internalId); // загрузка фото корабля
+                        $this->saveGallery($ship, $internalId); // загрузка фото корабля
+                        $this->savePhoto($ship, $internalId);
+                    }
+
+                    if( $updatePhoto){
+                        $this->saveGallery($ship, $internalId); // загрузка фото корабля
+                        $this->savePhoto($ship, $internalId);
                     }
 
                     //$this->includeOnboard($ship);          //
@@ -228,7 +234,7 @@ class ShipParser extends InfoflotAPI
     /**
      * @throws Exception
      */
-    protected function savePhotos($ship, $internalId): void
+    protected function saveGallery($ship, $internalId): void
     {
         if (empty($ship['photos'])) {
             error_log('' . $internalId . ' - нет фото');
@@ -248,6 +254,7 @@ class ShipParser extends InfoflotAPI
                 'alt'       => trim($photo['description']) ?? trim($ship['name']),
                 'name'      => trim($photo['description']) ?? trim($ship['name']),
                 'url'       => $photoPath,
+                'key'       => 'gallery', // Фото галерея
                 'priority'  => $photo['position'],
                 'mime_type' => $photo['filetype'],
                 'size'      => $photo['filesize'],
@@ -518,6 +525,50 @@ class ShipParser extends InfoflotAPI
             ])->queryOne();
 
         return $temp['id'];
+    }
+
+    protected function savePhoto(array $ship, int|string|null $internalId)
+    {
+        foreach ($ship['files'] as $key => $file) {
+            if (empty($file['filename'])) {
+                continue;
+            }
+
+            $photoPath = $this->saveFile($file['path'], 'ships/' . $internalId . '/file');
+
+            $alt = '';
+            switch ($key) {
+                case  'photo':
+                    $alt = $ship['name'];
+                    break;
+                case  'scheme':
+                    $alt = 'Схема';
+                    break;
+                case  'captainPhoto':
+                    $alt = $ship['captain'];
+                    break;
+                case 'cruiseDirectorPhoto':
+                    $alt = $ship['criuseDirector'];
+                    break;
+                case 'restaurantDirectorPhoto':
+                    $alt = $ship['restaurantDirector'];
+                    break;
+            }
+
+            $params = [
+                'alt'       => trim($alt),
+                'name'      => trim($ship['name'].'-'.$alt),
+                'url'       => $photoPath,
+                'key'       => $key, // Фото галерея
+                'priority'  => 0,
+                'mime_type' => $file['type'],
+                'size'      => $file['size'],
+                'ship_id'   => $internalId,
+            ];
+
+            Yii::$app->db->createCommand()->insert('ship_media', $params)->execute();
+            break;
+        }
     }
 
 

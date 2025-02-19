@@ -3,7 +3,7 @@
 use yii\db\Migration;
 
 /**
- * Handles the creation of table `{{%public_place}}`.
+ * Handles the creation of table `{{%public_places}}`.
  */
 class m241229_122236_create_public_place_table extends Migration
 {
@@ -12,7 +12,7 @@ class m241229_122236_create_public_place_table extends Migration
      */
     public function safeUp()
     {
-        $this->createTable('{{%public_place}}', [
+        $this->createTable('{{%public_places}}', [
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),
             'slug' => $this->string()->notNull()->unique(),
@@ -24,9 +24,9 @@ class m241229_122236_create_public_place_table extends Migration
             'updated_at' => $this->timestamp()->notNull()->defaultExpression(new \yii\db\Expression('NOW()')),
         ]);
 
-        $this->addCommentOnTable('{{%public_place}}', 'Публичные места на теплоходе');
+        $this->addCommentOnTable('{{%public_places}}', 'Публичные места на теплоходе');
 
-        $this->createIndex('idx_public_place_slug', '{{%public_place}}', 'slug');
+        $this->createIndex('idx_public_place_slug', '{{%public_places}}', 'slug');
 
     }
 
@@ -35,6 +35,6 @@ class m241229_122236_create_public_place_table extends Migration
      */
     public function safeDown()
     {
-        $this->dropTable('{{%public_place}}');
+        $this->dropTable('{{%public_places}}');
     }
 }

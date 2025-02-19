@@ -3,7 +3,7 @@
 use yii\db\Migration;
 
 /**
- * Handles the creation of table `{{%popular_route}}`.
+ * Handles the creation of table `{{%popular_routes}}`.
  */
 class m241229_122455_create_popular_route_table extends Migration
 {
@@ -12,7 +12,7 @@ class m241229_122455_create_popular_route_table extends Migration
      */
     public function safeUp()
     {
-        $this->createTable('{{%popular_route}}', [
+        $this->createTable('{{%popular_routes}}', [
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),
             'slug' => $this->string()->notNull()->unique(),
@@ -22,9 +22,9 @@ class m241229_122455_create_popular_route_table extends Migration
             'updated_at' => $this->timestamp()->notNull()->defaultExpression(new \yii\db\Expression('NOW()')),
         ]);
 
-        $this->addCommentOnTable('{{%popular_route}}', 'Популярные маршруты');
+        $this->addCommentOnTable('{{%popular_routes}}', 'Популярные маршруты');
 
-        $this->createIndex('idx_popular_route_slug', '{{%popular_route}}', 'slug');
+        $this->createIndex('idx_popular_route_slug', '{{%popular_routes}}', 'slug');
     }
 
     /**
@@ -32,6 +32,6 @@ class m241229_122455_create_popular_route_table extends Migration
      */
     public function safeDown()
     {
-        $this->dropTable('{{%popular_route}}');
+        $this->dropTable('{{%popular_routes}}');
     }
 }

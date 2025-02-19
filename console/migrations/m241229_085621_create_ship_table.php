@@ -3,7 +3,7 @@
 use yii\db\Migration;
 
 /**
- * Handles the creation of table `{{%ship}}`.
+ * Handles the creation of table `{{%ships}}`.
  */
 class m241229_085621_create_ship_table extends Migration
 {
@@ -12,7 +12,7 @@ class m241229_085621_create_ship_table extends Migration
      */
     public function safeUp(): void
     {
-        $this->createTable('{{%ship}}', [
+        $this->createTable('{{%ships}}', [
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),
             'slug' => $this->string()->notNull()->unique(),
@@ -54,14 +54,14 @@ class m241229_085621_create_ship_table extends Migration
             'updated_at' => $this->timestamp()->notNull()->defaultExpression(new \yii\db\Expression('NOW()')),
         ]);
 
-        $this->addCommentOnTable('{{%ship}}', 'Корабли');
+        $this->addCommentOnTable('{{%ships}}', 'Корабли');
 
-        $this->createIndex('idx-ship-slug_status', '{{%ship}}', ['slug', 'status'], true);
-        $this->createIndex('idx-ship-typeId', '{{%ship}}', 'typeId');
-        $this->createIndex('idx-ship-operatorId', '{{%ship}}', 'operatorId');
+        $this->createIndex('idx-ship-slug_status', '{{%ships}}', ['slug', 'status'], true);
+        $this->createIndex('idx-ship-typeId', '{{%ships}}', 'typeId');
+        $this->createIndex('idx-ship-operatorId', '{{%ships}}', 'operatorId');
 
-        $this->addForeignKey('fk-ship-typeId', '{{%ship}}', 'typeId', '{{%type_ship}}', 'id', 'CASCADE');
-        $this->addForeignKey('fk-ship-operatorId', '{{%ship}}', 'operatorId', '{{%operator}}', 'id', 'CASCADE');
+        $this->addForeignKey('fk-ship-typeId', '{{%ships}}', 'typeId', '{{%ship_types}}', 'id', 'CASCADE');
+        $this->addForeignKey('fk-ship-operatorId', '{{%ships}}', 'operatorId', '{{%operators}}', 'id', 'CASCADE');
     }
 
     /**
@@ -70,9 +70,9 @@ class m241229_085621_create_ship_table extends Migration
     public function safeDown(): void
     {
 
-        $this->dropForeignKey('fk-ship-typeId', '{{%ship}}');
-        $this->dropForeignKey('fk-ship-operatorId', '{{%ship}}');
+        $this->dropForeignKey('fk-ship-typeId', '{{%ships}}');
+        $this->dropForeignKey('fk-ship-operatorId', '{{%ships}}');
 
-        $this->dropTable('{{%ship}}');
+        $this->dropTable('{{%ships}}');
     }
 }
