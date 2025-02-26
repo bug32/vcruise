@@ -2,7 +2,7 @@
 
 namespace console\models;
 
-class Cabin extends \common\models\Cabin
+class Cabin extends \common\models\Cabins
 {
 
 }

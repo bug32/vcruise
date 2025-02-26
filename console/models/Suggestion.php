@@ -2,7 +2,7 @@
 
 namespace console\models;
 
-class Suggestion extends \common\models\Suggestion
+class Suggestion extends \common\models\Suggestions
 {
 
 }

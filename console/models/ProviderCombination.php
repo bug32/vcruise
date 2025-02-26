@@ -2,7 +2,7 @@
 
 namespace console\models;
 
-class ProviderCombination extends \common\models\ProviderCombination
+class ProviderCombination extends \common\models\ProviderCombinations
 {
 
     protected static array $ships = [];

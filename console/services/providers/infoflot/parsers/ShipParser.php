@@ -16,7 +16,7 @@ use yii\helpers\Inflector;
 
 class ShipParser extends InfoflotAPI
 {
-    protected \common\models\Ship $model;
+    protected  $model;
 
     /**
      * @var string Название таблицы для связи id провайдера и id модели в нутри системы
@@ -28,7 +28,7 @@ class ShipParser extends InfoflotAPI
     {
         parent::__construct();
 
-        $this->model    = new \common\models\Ship();
+        $this->model    = new Ship();
         $this->suggests = $this->getSuggests();
     }
 
@@ -43,10 +43,10 @@ class ShipParser extends InfoflotAPI
         set_time_limit(0);
 
         $nextPage = '/ships';
-        $page     = 33;
+        $page     = 1;
 
         while ($nextPage) {
-            $list = $this->request('/ships', ['limit' => 3, 'page' => $page]);
+            $list = $this->request('/ships', ['limit' => 50, 'page' => $page]);
             $page++;
 
             $nextPage = $list['pagination']['pages']['next']['url'] ?? NULL;
@@ -93,10 +93,10 @@ class ShipParser extends InfoflotAPI
                         'typeId'             => $shipTypeId,
                         'operatorId'         => $operatorId,
                         'stars'              => $ship['stars'] ?? 0,
-                        'captain'            => trim($ship['captain']),
-                        'cruiseDirector'     => trim($ship['criuseDirector']),
-                        'cruiseDirectorTel'  => trim($ship['cruiseDirectorTel']),
-                        'restaurantDirector' => trim($ship['restaurantDirector']),
+                        'captain'            => trim($ship['captain']??''),
+                        'cruiseDirector'     => trim($ship['criuseDirector']??''),
+                        'cruiseDirectorTel'  => trim($ship['cruiseDirectorTel']??''),
+                        'restaurantDirector' => trim($ship['restaurantDirector']??''),
                         'description'        => $this->clearText($ship['description']),
                         'descriptionBig'     => $this->clearText($ship['descriptionBig']),
                         'discounts'          => $this->getDiscount($ship['discounts']),
@@ -131,7 +131,7 @@ class ShipParser extends InfoflotAPI
                     Yii::$app->db->createCommand()->update(Ship::tableName(), $params, ['id' => $internalId])->execute();
 
                     if ($isNewShip) {
-                        Yii::$app->db->createCommand()->insert('provider_combination',
+                        Yii::$app->db->createCommand()->insert('provider_combinations',
                             [
                                 'provider_name' => self::PROVIDER_NAME,
                                 'foreign_id'    => $item['id'],
@@ -189,7 +189,7 @@ class ShipParser extends InfoflotAPI
     protected function getInternalId($id): ?string
     {
         $result = Yii::$app->db->createCommand(
-            'SELECT internal_id FROM provider_combination 
+            'SELECT internal_id FROM provider_combinations 
             WHERE provider_name = :provider_name AND foreign_id = :foreign_id AND model_name = :model_name',
             [
                 ':provider_name' => self::PROVIDER_NAME,
@@ -261,7 +261,7 @@ class ShipParser extends InfoflotAPI
                 'ship_id'   => $internalId,
             ];
 
-            Yii::$app->db->createCommand()->insert('ship_media', $params)->execute();
+            Yii::$app->db->createCommand()->insert('ship_medias', $params)->execute();
         }
         return;
     }
@@ -287,14 +287,14 @@ class ShipParser extends InfoflotAPI
                     'description' => $this->clearText(strip_tags($sug['descr'])),
                 ];
 
-                Yii::$app->db->createCommand()->insert('suggestion', $params)->execute();
+                Yii::$app->db->createCommand()->insert('suggestions', $params)->execute();
                 $this->suggests = $this->getSuggests();
             }
 
             $suggest_id = $this->suggests[$title];
 
             $temp = Yii::$app->db->createCommand(
-                'SELECT * FROM suggestion_ship_relation WHERE suggestion_id = :suggestion_id AND ship_id = :ship_id',
+                'SELECT * FROM suggestion_ship_relations WHERE suggestion_id = :suggestion_id AND ship_id = :ship_id',
                 [
                     ':suggestion_id' => $suggest_id,
                     ':ship_id'       => $shipId
@@ -309,7 +309,7 @@ class ShipParser extends InfoflotAPI
                 'ship_id'       => $shipId,
                 'priority'      => $sug['type_priority'],
             ];
-            Yii::$app->db->createCommand()->insert('suggestion_ship_relation', $params)->execute();
+            Yii::$app->db->createCommand()->insert('suggestion_ship_relations', $params)->execute();
         }
     }
 
@@ -392,6 +392,7 @@ class ShipParser extends InfoflotAPI
                 print_r($cabin);
                 print_r($providerDeck[$cabin['deckId']]);
                 print_r($model->getErrors());
+
                 die();
                 continue;
             }
@@ -412,7 +413,7 @@ class ShipParser extends InfoflotAPI
                     'ship_id'     => $shipId,
                     'description' => $cabinType['description'],
                     'priority'    => $cabinType['position'],
-                    'isEco'       => $cabinType['isEko'],
+                    'isEco'       => (int)$cabinType['isEko'],
                 ];
 
                 $model = new CabinType();
@@ -428,7 +429,7 @@ class ShipParser extends InfoflotAPI
                     'internal_id'   => $model->id,
                     'model_name'    => self::PROVIDER_MODEL_NAME_CABIN_TYPE
                 ];
-                Yii::$app->db->createCommand()->insert('provider_combination', $params)->execute();
+                Yii::$app->db->createCommand()->insert('provider_combinations', $params)->execute();
 
                 $providerCabinType = $this->getProviderCabinType($shipId);
             } else {
@@ -450,7 +451,7 @@ class ShipParser extends InfoflotAPI
                     continue;
                 }
 
-                Yii::$app->db->createCommand()->insert('cabin_type_media', $params)->execute();
+                Yii::$app->db->createCommand()->insert('cabin_type_medias', $params)->execute();
             }
 
             // Сохранение услуг
@@ -463,7 +464,7 @@ class ShipParser extends InfoflotAPI
                         'cabin_type_id' => $model->id,
                         'service_id'    => $service,
                     ];
-                    Yii::$app->db->createCommand()->insert('cabin_type_service_relation', $params)->execute();
+                    Yii::$app->db->createCommand()->insert('cabin_type_service_relations', $params)->execute();
                 } catch (\Throwable $e) {
                     echo $e->getMessage() . PHP_EOL;
                 }
@@ -475,7 +476,7 @@ class ShipParser extends InfoflotAPI
     {
         $operator = $this->clearText($ship['operatorName']);
 
-        $temp = Yii::$app->db->createCommand('Select id from operator where name = :name',
+        $temp = Yii::$app->db->createCommand('Select id from operators where name = :name',
             [
                 ':name' => $operator
             ])->queryOne();
@@ -484,14 +485,14 @@ class ShipParser extends InfoflotAPI
             return $temp['id'];
         }
 
-        Yii::$app->db->createCommand()->insert('operator', [
+        Yii::$app->db->createCommand()->insert('operators', [
             'name'   => $operator,
             'slug'   => Inflector::slug($operator),
             'status' => 10
         ])->execute();
 
 
-        $temp = Yii::$app->db->createCommand('Select id from operator where name = :name',
+        $temp = Yii::$app->db->createCommand('Select id from operators where name = :name',
             [
                 ':name' => $operator
             ])->queryOne();
@@ -503,7 +504,7 @@ class ShipParser extends InfoflotAPI
     {
         $type = $this->clearText($ship['typeName']);
 
-        $temp = Yii::$app->db->createCommand('Select id from type_ship where name = :name',
+        $temp = Yii::$app->db->createCommand('Select id from ship_types where name = :name',
             [
                 ':name' => $type
             ])->queryOne();
@@ -512,14 +513,14 @@ class ShipParser extends InfoflotAPI
             return $temp['id'];
         }
 
-        Yii::$app->db->createCommand()->insert('type_ship', [
+        Yii::$app->db->createCommand()->insert('ship_types', [
             'name'   => $type,
             'slug'   => Inflector::slug($type),
             'status' => 10
         ])->execute();
 
 
-        $temp = Yii::$app->db->createCommand('Select id from type_ship where name = :name',
+        $temp = Yii::$app->db->createCommand('Select id from ship_types where name = :name',
             [
                 ':name' => $type
             ])->queryOne();
@@ -566,7 +567,7 @@ class ShipParser extends InfoflotAPI
                 'ship_id'   => $internalId,
             ];
 
-            Yii::$app->db->createCommand()->insert('ship_media', $params)->execute();
+            Yii::$app->db->createCommand()->insert('ship_medias', $params)->execute();
             break;
         }
     }

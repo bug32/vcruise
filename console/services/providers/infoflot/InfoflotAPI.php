@@ -21,8 +21,12 @@ class InfoflotAPI
     public const               PROVIDER_MODEL_NAME_CRUISE     = 'cruise';
     public const               PROVIDER_MODEL_NAME_PORT       = 'port';
     public const               PROVIDER_MODEL_NAME_CITY       = 'city';
-    public const               PROVIDER_MODEL_NAME_COUNTRY       = 'country';
+    public const               PROVIDER_MODEL_NAME_COUNTRY    = 'country';
     public const               PROVIDER_MODEL_NAME_DOCK       = 'dock';
+    public const               PROVIDER_MODEL_POPULAR_ROUTES  = 'popular-routes';
+    public const               PROVIDER_MODEL_REGIONS  = 'regions';
+    public const               PROVIDER_MODEL_PLACES  = 'public-places';
+    public const               PROVIDER_MODEL_SERVICE  = 'service';
     public const               BASE_URL                       = 'https://restapi.infoflot.com';
     public const               TOKEN                          = "ddf71b33662078a069d2a1eacafefb33cc783bf6";
     public const               PAGE_LIMIT                     = 50;
@@ -101,9 +105,9 @@ class InfoflotAPI
     protected function getProviderDeck()
     {
 
-        $sql = "SELECT provider_combination.* 
-            FROM provider_combination 
-            WHERE provider_combination.provider_name = :provider_name AND provider_combination.model_name = :model_name";
+        $sql = "SELECT provider_combinations.* 
+            FROM provider_combinations 
+            WHERE provider_combinations.provider_name = :provider_name AND provider_combinations.model_name = :model_name";
 
         $providerDeck = Yii::$app->db->createCommand(
             $sql,
@@ -122,7 +126,7 @@ class InfoflotAPI
 
     protected function setProviderDeck($foreignId, $internalId): void
     {
-        Yii::$app->db->createCommand()->insert('provider_combination', [
+        Yii::$app->db->createCommand()->insert('provider_combinations', [
             'provider_name' => self::PROVIDER_NAME,
             'foreign_id'    => $foreignId,
             'internal_id'   => $internalId,
@@ -135,10 +139,10 @@ class InfoflotAPI
      */
     protected function getProviderCabin(int|string $shipId): array
     {
-        $sql = "SELECT provider_combination.* 
-            FROM provider_combination 
-            LEFT JOIN cabin ON cabin.ship_id = provider_combination.internal_id
-            WHERE cabin.ship_id = :id AND provider_combination.provider_name = :provider_name AND provider_combination.model_name = :model_name";
+        $sql = "SELECT provider_combinations.* 
+            FROM provider_combinations 
+            LEFT JOIN cabins ON cabins.ship_id = provider_combinations.internal_id
+            WHERE cabins.ship_id = :id AND provider_combinations.provider_name = :provider_name AND provider_combinations.model_name = :model_name";
 
         $providerCabin = Yii::$app->db->createCommand(
             $sql,
@@ -158,7 +162,7 @@ class InfoflotAPI
 
     protected function setProviderCabin(mixed $foreignId, int $internalId): void
     {
-        Yii::$app->db->createCommand()->insert('provider_combination', [
+        Yii::$app->db->createCommand()->insert('provider_combinations', [
             'provider_name' => self::PROVIDER_NAME,
             'foreign_id'    => $foreignId,
             'internal_id'   => $internalId,
@@ -168,10 +172,10 @@ class InfoflotAPI
 
     protected function getProviderCabinType($shipId): array
     {
-        $sql = "SELECT provider_combination.* 
-            FROM provider_combination 
-            WHERE provider_combination.provider_name = :provider_name AND 
-                  provider_combination.model_name = :model_name";
+        $sql = "SELECT provider_combinations.* 
+            FROM provider_combinations 
+            WHERE provider_combinations.provider_name = :provider_name AND 
+                  provider_combinations.model_name = :model_name";
 
         $providerCabin = Yii::$app->db->createCommand(
             $sql,

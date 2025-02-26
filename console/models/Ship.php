@@ -7,7 +7,7 @@ use yii\base\ErrorException;
 use yii\db\Exception;
 use yii\helpers\FileHelper;
 
-class Ship extends \common\models\Ship
+class Ship extends \common\models\Ships
 {
 
     /**
@@ -21,10 +21,10 @@ class Ship extends \common\models\Ship
         $model             = new self();
         $model->name       = $tempName;
         $model->slug       = $tempName;
-        $model->operatorId = 0;
-        $model->typeId     = 0;
-        $model->status     = 0;
-        $model->priority   = 0;
+        $model->operatorId = 1;
+        $model->typeId     = 1;
+        $model->status     = 1;
+        $model->priority   = 1;
         if ($model->save()) {
             return $model->id;
         }

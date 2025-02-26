@@ -3,6 +3,7 @@
 namespace frontend\controllers;
 
 use Faker\Provider\ru_RU\Company;
+use frontend\helpers\Url;
 use frontend\models\ResendVerificationEmailForm;
 use frontend\models\VerifyEmailForm;
 use Yii;

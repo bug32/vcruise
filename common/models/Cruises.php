@@ -13,62 +13,66 @@ use yii\db\ActiveQuery as ActiveQueryAlias;
 /**
  * This is the model class for table "cruises".
  *
- * @property int $id
- * @property string $name
- * @property string $slug
- * @property string $route
- * @property string|null $route_short
- * @property string|null $description
- * @property string|null $include Включено
- * @property string|null $additional Дополнительно
- * @property string|null $discounts Скидки
- * @property string|null $map ссылка на карту маршрута
- * @property int|null $status
- * @property string $date_start
- * @property string $date_end
- * @property int $date_start_timestamp
- * @property int $date_end_timestamp
- * @property int|null $days
- * @property int|null $nights
- * @property int|null $min_price
- * @property int|null $max_price
- * @property string|null $currency Валюта
- * @property int|null $free_cabins
- * @property int $ship_id
- * @property int|null $port_start_id
- * @property int|null $port_end_id
- * @property string|null $dock_start
- * @property int $city_start_id
- * @property int $city_end_id
- * @property string|null $cabins_json Свободные каюты
- * @property string|null $timetable_json Расписание
- * @property string $created_at
- * @property string $updated_at
- * @property int|null $type_id Тип круиза
+ * @property int                           $id
+ * @property string                        $name
+ * @property string                        $slug
+ * @property string                        $route
+ * @property string|null                   $route_short
+ * @property string|null                   $description
+ * @property string|null                   $include        Включено
+ * @property string|null                   $additional     Дополнительно
+ * @property string|null                   $discounts      Скидки
+ * @property string|null                   $map            ссылка на карту маршрута
+ * @property int|null                      $status
+ * @property string                        $date_start
+ * @property string                        $date_end
+ * @property int                           $date_start_timestamp
+ * @property int                           $date_end_timestamp
+ * @property int|null                      $days
+ * @property int|null                      $nights
+ * @property int|null                      $min_price
+ * @property int|null                      $max_price
+ * @property string|null                   $currency       Валюта
+ * @property int|null                      $free_cabins
+ * @property int                           $ship_id
+ * @property int|null                      $parent_cruise
+ * @property int|null                      $port_start_id
+ * @property int|null                      $port_end_id
+ * @property string|null                   $dock_start
+ * @property int                           $city_start_id
+ * @property int                           $city_end_id
+ * @property string|null                   $cabins_json    Свободные каюты
+ * @property string|null                   $timetable_json Расписание
+ * @property string                        $created_at
+ * @property string                        $updated_at
+ * @property int|null                      $type_id        Тип круиза
  *
- * @property Cities $cityEnd
- * @property Cities $cityStart
+ * @property Cities                        $cityEnd
+ * @property Cities                        $cityStart
  * @property CruisePopularRouteRelations[] $cruisePopularRouteRelations
- * @property CruiseRegionRelations[]     $cruiseRegionRelations
- * @property CruiseRiverRelations[]      $cruiseRiverRelations
- * @property CruiseSuggestionRelations[] $cruiseSuggestionRelations
- * @property PopularRoutes[]             $popularRoutes
- * @property Ports                       $portEnd
- * @property Ports                       $portStart
- * @property Regions[]                   $regions
- * @property Rivers[]                    $rivers
- * @property Ships                       $ship
- * @property Suggestions[]               $suggestions
- * @property CruiseTypes                 $type
+ * @property CruiseRegionRelations[]       $cruiseRegionRelations
+ * @property CruiseRiverRelations[]        $cruiseRiverRelations
+ * @property CruiseSuggestionRelations[]   $cruiseSuggestionRelations
+ * @property PopularRoutes[]               $popularRoutes
+ * @property Ports                         $portEnd
+ * @property Ports                         $portStart
+ * @property Regions[]                     $regions
+ * @property Rivers[]                      $rivers
+ * @property Ships                         $ship
+ * @property Suggestions[]                 $suggestions
+ * @property CruiseTypes                   $type
  */
 class Cruises extends \yii\db\ActiveRecord
 {
+
+    const STATUS_ACTIVE = 10;
+
     /**
      * {@inheritdoc}
      */
     public static function tableName(): string
     {
-        return 'cruises';
+        return '{{%cruises}}';
     }
 
     /**
@@ -77,18 +81,37 @@ class Cruises extends \yii\db\ActiveRecord
     public function rules(): array
     {
         return [
-            [['name', 'slug', 'route', 'date_start', 'date_end', 'date_start_timestamp', 'date_end_timestamp', 'ship_id'], 'required'],
+            [
+                [
+                    'name', 'slug', 'route', 'date_start', 'date_end', 'date_start_timestamp', 'date_end_timestamp',
+                    'ship_id'], 'required'],
             [['route', 'route_short', 'description', 'include', 'additional', 'discounts'], 'string'],
-            [['status', 'date_start_timestamp', 'date_end_timestamp', 'days', 'nights', 'min_price', 'max_price', 'free_cabins', 'ship_id', 'port_start_id', 'port_end_id', 'city_start_id', 'city_end_id', 'type_id'], 'integer'],
+            [
+                [
+                    'status', 'date_start_timestamp', 'date_end_timestamp', 'days', 'nights', 'min_price', 'max_price',
+                    'free_cabins', 'ship_id', 'port_start_id', 'port_end_id', 'city_start_id', 'city_end_id',
+                    'type_id'], 'integer'],
             [['date_start', 'date_end', 'cabins_json', 'timetable_json', 'created_at', 'updated_at'], 'safe'],
             [['name', 'slug', 'map', 'currency', 'dock_start'], 'string', 'max' => 255],
             [['slug'], 'unique'],
-            [['city_end_id'], 'exist', 'skipOnError' => true, 'targetClass' => Cities::class, 'targetAttribute' => ['city_end_id' => 'id']],
-            [['city_start_id'], 'exist', 'skipOnError' => true, 'targetClass' => Cities::class, 'targetAttribute' => ['city_start_id' => 'id']],
-            [['port_end_id'], 'exist', 'skipOnError' => true, 'targetClass' => Ports::class, 'targetAttribute' => ['port_end_id' => 'id']],
-            [['port_start_id'], 'exist', 'skipOnError' => true, 'targetClass' => Ports::class, 'targetAttribute' => ['port_start_id' => 'id']],
-            [['ship_id'], 'exist', 'skipOnError' => true, 'targetClass' => Ships::class, 'targetAttribute' => ['ship_id' => 'id']],
-            [['type_id'], 'exist', 'skipOnError' => true, 'targetClass' => CruiseTypes::class, 'targetAttribute' => ['type_id' => 'id']],
+            [
+                ['city_end_id'], 'exist', 'skipOnError'     => TRUE, 'targetClass' => Cities::class,
+                                          'targetAttribute' => ['city_end_id' => 'id']],
+            [
+                ['city_start_id'], 'exist', 'skipOnError'     => TRUE, 'targetClass' => Cities::class,
+                                            'targetAttribute' => ['city_start_id' => 'id']],
+            [
+                ['port_end_id'], 'exist', 'skipOnError'     => TRUE, 'targetClass' => Ports::class,
+                                          'targetAttribute' => ['port_end_id' => 'id']],
+            [
+                ['port_start_id'], 'exist', 'skipOnError'     => TRUE, 'targetClass' => Ports::class,
+                                            'targetAttribute' => ['port_start_id' => 'id']],
+            [
+                ['ship_id'], 'exist', 'skipOnError'     => TRUE, 'targetClass' => Ships::class,
+                                      'targetAttribute' => ['ship_id' => 'id']],
+            [
+                ['type_id'], 'exist', 'skipOnError'     => TRUE, 'targetClass' => CruiseTypes::class,
+                                      'targetAttribute' => ['type_id' => 'id']],
         ];
     }
 
@@ -98,38 +121,38 @@ class Cruises extends \yii\db\ActiveRecord
     public function attributeLabels(): array
     {
         return [
-            'id' => 'ID',
-            'name' => 'Name',
-            'slug' => 'Slug',
-            'route' => 'Route',
-            'route_short' => 'Route Short',
-            'description' => 'Description',
-            'include' => 'Включено',
-            'additional' => 'Дополнительно',
-            'discounts' => 'Скидки',
-            'map' => 'ссылка на карту маршрута',
-            'status' => 'Status',
-            'date_start' => 'Date Start',
-            'date_end' => 'Date End',
+            'id'                   => 'ID',
+            'name'                 => 'Name',
+            'slug'                 => 'Slug',
+            'route'                => 'Route',
+            'route_short'          => 'Route Short',
+            'description'          => 'Description',
+            'include'              => 'Включено',
+            'additional'           => 'Дополнительно',
+            'discounts'            => 'Скидки',
+            'map'                  => 'ссылка на карту маршрута',
+            'status'               => 'Status',
+            'date_start'           => 'Date Start',
+            'date_end'             => 'Date End',
             'date_start_timestamp' => 'Date Start Timestamp',
-            'date_end_timestamp' => 'Date End Timestamp',
-            'days' => 'Days',
-            'nights' => 'Nights',
-            'min_price' => 'Min Price',
-            'max_price' => 'Max Price',
-            'currency' => 'Валюта',
-            'free_cabins' => 'Free Cabins',
-            'ship_id' => 'Ship ID',
-            'port_start_id' => 'Port Start ID',
-            'port_end_id' => 'Port End ID',
-            'dock_start' => 'Dock Start',
-            'city_start_id' => 'City Start ID',
-            'city_end_id' => 'City End ID',
-            'cabins_json' => 'Свободные каюты',
-            'timetable_json' => 'Расписание',
-            'created_at' => 'Created At',
-            'updated_at' => 'Updated At',
-            'type_id' => 'Тип круиза',
+            'date_end_timestamp'   => 'Date End Timestamp',
+            'days'                 => 'Days',
+            'nights'               => 'Nights',
+            'min_price'            => 'Min Price',
+            'max_price'            => 'Max Price',
+            'currency'             => 'Валюта',
+            'free_cabins'          => 'Free Cabins',
+            'ship_id'              => 'Ship ID',
+            'port_start_id'        => 'Port Start ID',
+            'port_end_id'          => 'Port End ID',
+            'dock_start'           => 'Dock Start',
+            'city_start_id'        => 'City Start ID',
+            'city_end_id'          => 'City End ID',
+            'cabins_json'          => 'Свободные каюты',
+            'timetable_json'       => 'Расписание',
+            'created_at'           => 'Created At',
+            'updated_at'           => 'Updated At',
+            'type_id'              => 'Тип круиза',
         ];
     }
 

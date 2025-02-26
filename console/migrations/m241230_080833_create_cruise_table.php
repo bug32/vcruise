@@ -39,6 +39,7 @@ class m241230_080833_create_cruise_table extends Migration
             'free_cabins' => $this->integer()->defaultValue(0),
 
             'ship_id' => $this->integer()->notNull(),
+            'parent_cruise' => $this->integer()->defaultValue(NULL),
 
             'port_start_id' => $this->integer()->defaultValue(1), // 'port_id'
             'port_end_id' => $this->integer()->defaultValue(1), // 'port_id'

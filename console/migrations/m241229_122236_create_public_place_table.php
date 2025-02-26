@@ -15,7 +15,6 @@ class m241229_122236_create_public_place_table extends Migration
         $this->createTable('{{%public_places}}', [
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),
-            'slug' => $this->string()->notNull()->unique(),
             'description' => $this->text(),
             'photo' => $this->string(),
             'icon' => $this->string(),
@@ -25,9 +24,6 @@ class m241229_122236_create_public_place_table extends Migration
         ]);
 
         $this->addCommentOnTable('{{%public_places}}', 'Публичные места на теплоходе');
-
-        $this->createIndex('idx_public_place_slug', '{{%public_places}}', 'slug');
-
     }
 
     /**

@@ -2,7 +2,7 @@
 
 namespace console\models;
 
-class Deck extends \common\models\Deck
+class Deck extends \common\models\Decks
 {
 
 }

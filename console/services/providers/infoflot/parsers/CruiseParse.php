@@ -3,6 +3,7 @@
 namespace console\services\providers\infoflot\parsers;
 
 use common\helpers\FormatDate;
+use common\models\Cruises;
 use console\models\Cruise;
 use console\models\ProviderCombination;
 use console\services\providers\infoflot\InfoflotAPI;
@@ -58,48 +59,68 @@ class CruiseParse extends InfoflotAPI
 
                     $slug   = $this->getSlug($cruise);
                     $params = [
-                        'name'                 => $title,
-                        'slug'                 => $slug,
-                        'route'                => $this->clearText($cruise['route'] ?? $cruise['routeShort']),
-                        'route_short'          => $this->clearText($cruise['routeShort']),
+                        'name'        => $title,
+                        'slug'        => $slug,
+                        'route'       => $this->clearText($cruise['route'] ?? $cruise['routeShort']),
+                        'route_short' => $this->clearText($cruise['routeShort']),
+                        'description' => $this->clearText($cruise['description']),
+                        'include'     => $this->clearText($cruise['include']),
+                        'additional'  => $this->clearText($cruise['additional']),
+                        'discounts'   => $this->clearText($cruise['discountsText']),
+                        'map'         => $cruise['map'],
+                        'status'      => Cruises::STATUS_ACTIVE,
+
                         'date_start'           => $cruise['dateStart'],
                         'date_end'             => $cruise['dateEnd'],
                         'date_start_timestamp' => $cruise['dateStartTimestamp'],
                         'date_end_timestamp'   => $cruise['dateEndTimestamp'],
                         'days'                 => $cruise['days'],
-                        'type_id'              => $type_id,
                         'nights'               => $cruise['nights'],
-                        'min_price'            => $cruise['min_price'],
-                        'max_price'            => $cruise['max_price'],
-                        'currency'             => $cruise['currency'],
-                        'free_cabins'          => $cruise['freeCabins'],
-                        'ship_id'              => $this->getShipId($cruise['ship'] ?? []),
-                        'port_start_id'        => $this->getPortId($cruise['portStart'] ?? ''),
-                        'port_end_id'          => $this->getPortId($cruise['portEnd'] ?? ''),
-                        'city_start_id'        => $this->getCityId($cruise['startCity'] ?? ''),
-                        'city_end_id'          => $this->getCityId($cruise['endCity'] ?? ''),
-                        'map'                  => $cruise['map'],
-                        'timetable_json'       => $this->getTimetableJson($cruise['timetable'] ?? []),
-                        'cabins_json'          => json_encode([], JSON_THROW_ON_ERROR) //$this->getCabinsJson($cabins)
+
+                        'min_price' => $cruise['min_price'],
+                        'max_price' => $cruise['max_price'],
+                        'currency'  => $cruise['currency'],
+
+                        'free_cabins' => $cruise['freeCabins'],
+
+                        'ship_id' => $this->getShipId($cruise['ship'] ?? []),
+                        'parent_cruise' => $cruise['parentCruise'],
+
+                        'port_start_id' => $this->getPortId($cruise['portStart'] ?? ''),
+                        'port_end_id'   => $this->getPortId($cruise['portEnd'] ?? ''),
+                        'city_start_id' => $this->getCityId($cruise['startCity'] ?? ''),
+                        'city_end_id'   => $this->getCityId($cruise['endCity'] ?? ''),
+
+                        'type_id' => $type_id,
+
+                        'timetable_json' => $this->getTimetableJson($cruise['timetable'] ?? []),
+                        'cabins_json'    => json_encode([], JSON_THROW_ON_ERROR) //$this->getCabinsJson($cabins)
                     ];
 
                     if ($check) {
                         \Yii::$app->db->createCommand()->update('{{%cruises}}', $params, ['id' => $check['internal_id']])->execute();
+                        echo 'UP cruise ID :' . $cruise['id'] . PHP_EOL;
+                        continue;
                     } else {
                         \Yii::$app->db->createCommand()->insert('{{%cruises}}', $params)->execute();
-                        $cruiseNew = \Yii::$app->db->createCommand("SELECT id FROM cruise WHERE slug=:slug", ['slug' => $slug])->queryOne();
+                        $cruiseNew = \Yii::$app->db->createCommand("SELECT id FROM cruises WHERE slug=:slug", ['slug' => $slug])->queryOne();
 
-                        \Yii::$app->db->createCommand()->insert('provider_combination', [
+                        \Yii::$app->db->createCommand()->insert('provider_combinations', [
                             'provider_name' => self::PROVIDER_NAME,
                             'foreign_id'    => $cruise['id'],
                             'model_name'    => self::PROVIDER_MODEL_NAME_CRUISE,
                             'internal_id'   => $cruiseNew['id'],
                         ])->execute();
+
+                        $this->includeRivers($cruise['rivers'], $cruiseNew['id']);
+                        $this->includeRoutes($cruise['popularRoutes'], $cruiseNew['id']);
+                        $this->includePhoto($cruise['photos'], $cruiseNew['id']);
+                        $this->includeRegion($cruise['regions'], $cruiseNew['id']);
+
                     }
 
                     echo 'ADD cruise ID :' . $cruise['id'] . PHP_EOL;
                     echo "Internal ID :" . ($cruiseNew['id'] ?? $check['internal_id']) . PHP_EOL;
-
                 } catch (Throwable $e) {
                     echo "Error " . $e->getMessage() . PHP_EOL;
                     continue;
@@ -156,7 +177,7 @@ class CruiseParse extends InfoflotAPI
     protected function getPortId(mixed $param): int
     {
         if (empty($param['id'])) {
-            return 0;
+            return 1;
         }
 
         $this->providerPortID = $this->getProviderPort();
@@ -182,7 +203,7 @@ class CruiseParse extends InfoflotAPI
     protected function getCityId(mixed $param)
     {
         if (empty($param['id'])) {
-            return 0;
+            return 1;
         }
 
         if (empty($this->providerCityID)) {
@@ -200,7 +221,7 @@ class CruiseParse extends InfoflotAPI
         ]);
 
         if (!$providerCombination) {
-            return 0;
+            return 1;
         }
 
         $this->providerCityID[$param['id']] = $providerCombination->internal_id;
@@ -250,7 +271,7 @@ class CruiseParse extends InfoflotAPI
 
     protected function getProviderShips(): array
     {
-        $result = \Yii::$app->db->createCommand('SELECT * FROM provider_combination 
+        $result = \Yii::$app->db->createCommand('SELECT * FROM provider_combinations 
          WHERE provider_name = :provider_name AND model_name = :model_name', [
             ':provider_name' => self::PROVIDER_NAME,
             ':model_name'    => self::PROVIDER_MODEL_NAME_SHIP
@@ -265,7 +286,7 @@ class CruiseParse extends InfoflotAPI
 
     protected function getProviderPort(): array
     {
-        $result = \Yii::$app->db->createCommand('SELECT * FROM provider_combination 
+        $result = \Yii::$app->db->createCommand('SELECT * FROM provider_combinations 
          WHERE provider_name = :provider_name AND model_name = :model_name', [
             ':provider_name' => self::PROVIDER_NAME,
             ':model_name'    => self::PROVIDER_MODEL_NAME_PORT
@@ -280,7 +301,7 @@ class CruiseParse extends InfoflotAPI
 
     protected function getProviderCity(): array
     {
-        $result = \Yii::$app->db->createCommand('SELECT * FROM provider_combination 
+        $result = \Yii::$app->db->createCommand('SELECT * FROM provider_combinations 
          WHERE provider_name = :provider_name AND model_name = :model_name', [
             ':provider_name' => self::PROVIDER_NAME,
             ':model_name'    => self::PROVIDER_MODEL_NAME_CITY
@@ -293,30 +314,144 @@ class CruiseParse extends InfoflotAPI
         return ArrayHelper::index($result, 'foreign_id');
     }
 
-
     // Тип круиза
 
     /**
      * @throws Exception
      */
     protected function getTypeId($cruise): int
-    {   // тип 0 - значение не выбрано.
-        if( empty($cruise['type']['name']) ) {
-            return 0;
+    {   // тип 1 - значение не выбрано.
+        if (empty($cruise['type']['name'])) {
+            return 1;
         }
 
         $typeName = trim($cruise['type']['name']);
-        $result   = \Yii::$app->db->createCommand('SELECT * FROM cruise_type WHERE name="' . $typeName . '"')->queryOne();
+        $result   = \Yii::$app->db->createCommand('SELECT * FROM cruise_types WHERE name="' . $typeName . '"')->queryOne();
 
-        if( empty($result) ) {
-            \Yii::$app->db->createCommand()->insert('cruise_type', [
+        if (empty($result)) {
+            \Yii::$app->db->createCommand()->insert('cruise_types', [
                 'name' => $typeName,
                 'slug' => Inflector::slug($typeName),
             ])->execute();
 
-            $result = \Yii::$app->db->createCommand('SELECT * FROM cruise_type WHERE name="' . $typeName . '"')->queryOne();
+            $result = \Yii::$app->db->createCommand('SELECT * FROM cruise_types WHERE name="' . $typeName . '"')->queryOne();
         }
 
         return $result['id'];
+    }
+
+    /**
+     * @throws Exception
+     */
+    protected function includeRivers($rivers, int $internal_id): void
+    {
+        if (empty($rivers)) {
+            return;
+        }
+
+        foreach ($rivers as $river) {
+            $temp = \Yii::$app->db->createCommand('SELECT id from rivers WHERE name=:name', [':name' => $river['name']])->queryOne();
+            if (empty($temp)) {
+                echo 'NOT RIVER ' . $river['name'] . PHP_EOL;
+                continue;
+            }
+
+            \Yii::$app->db->createCommand()->insert('cruise_river_relations', [
+                'cruise_id' => $internal_id,
+                'river_id'  => $temp['id'],
+            ])->execute();
+
+        }
+
+    }
+
+    /**
+     * @throws Exception
+     */
+    protected function includeRoutes(mixed $popularRoutes, mixed $id): void
+    {
+        if (empty($popularRoutes)) {
+            return;
+        }
+        foreach ($popularRoutes as $route) {
+            $temp = \Yii::$app->db->createCommand('SELECT internal_id from provider_combinations 
+                   WHERE 
+                       foreign_id=:foreign_id AND 
+                       provider_name=:provider_name AND
+                       model_name=:name',
+                [
+                    ':foreign_id'    => $route['id'],
+                    ':provider_name' => self::PROVIDER_NAME,
+                    ':name'          => self::PROVIDER_MODEL_POPULAR_ROUTES
+                ])->queryOne();
+
+            if (empty($temp)) {
+                echo 'NOT ROUTE ' . $route['name'] . PHP_EOL;
+                continue;
+            }
+
+            \Yii::$app->db->createCommand()->insert('cruise_popular_route_relations', [
+                'cruise_id'        => $id,
+                'popular_route_id' => $temp['internal_id'],
+            ])->execute();
+        }
+
+    }
+
+    protected function includePhoto(mixed $photos, mixed $id): void
+    {
+        if (empty($photos)) {
+            return;
+        }
+
+        foreach ($photos as $photo) {
+
+            if (empty($photo['filename'])) {
+                continue;
+            }
+            $src = $this->saveFile($photo['filename'], 'cruise/' . $id . '/photos');
+
+            \Yii::$app->db->createCommand()->insert('cruise_medias', [
+                'cruise_id' => $id,
+                'url'       => $src,
+                'name'      => $photo['description'],
+                'alt'       => $photo['description'],
+                'mime_type' => $photo['filetype'],
+                'size'      => $photo['filesize'],
+                'priority'  => $photo['position'],
+            ])->execute();
+
+        }
+    }
+
+    protected function includeRegion(mixed $regions, mixed $id): void
+    {
+        if(empty($regions)){
+            return;
+        }
+
+        foreach ($regions as $region) {
+
+            $temp = \Yii::$app->db->createCommand('SELECT internal_id from provider_combinations 
+                   WHERE 
+                       foreign_id=:foreign_id AND 
+                       provider_name=:provider_name AND
+                       model_name=:name',
+                [
+                    ':foreign_id'    => $region['id'],
+                    ':provider_name' => self::PROVIDER_NAME,
+                    ':name'          => self::PROVIDER_MODEL_REGIONS
+                ])->queryOne();
+
+            if( empty($temp)){
+                continue;
+            }
+
+            \Yii::$app->db->createCommand()->insert('cruise_region_relations', [
+                'cruise_id' => $id,
+                'region_id' => $temp['internal_id'],
+            ])->execute();
+
+        }
     }
 }

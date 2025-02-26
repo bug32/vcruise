@@ -5,6 +5,7 @@ namespace console\services\providers\infoflot\parsers;
 use console\models\City;
 use console\services\providers\infoflot\InfoflotAPI;
 use Yii;
+use yii\db\Transaction;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Inflector;
 
@@ -26,23 +27,40 @@ class OtherParser extends InfoflotAPI
 
             try {
 
+
+
                 $icon = '';
-                if (empty($service['icon'])) {
+                if (!empty($service['icon'])) {
                     $icon = $this->saveFile($service['icon'], 'services');
                 }
 
                 $params = [
                     'id'          => $service['id'],
                     'name'        => $service['name'],
-                    'slug'        => Inflector::slug($service['name']),
                     'icon'        => $icon,
                     'description' => $this->clearText(strip_tags($service['description'])),
                     'priority'    => $service['priority'],
                 ];
 
-                \Yii::$app->db->createCommand()->insert('service', $params)->execute();
+                $temp = Yii::$app->db->createCommand('SELECT id FROM services WHERE id = :id', [
+                    ':id' => $service['id']
+                ])->queryOne();
+                if ($temp) {
+
+                    if( empty($icon) ) {
+                        continue;
+                    }
+
+                    Yii::$app->db->createCommand()->update('services', [
+                        'icon'        => $icon,
+                    ], 'id = :id', [':id' => $service['id']])->execute();
+                    continue;
+                }else {
+                    \Yii::$app->db->createCommand()->insert('services', $params)->execute();
+                }
+
             } catch (\Throwable $e) {
-                echo 'Error ID: ' . $service['id'] . PHP_EOL;
+                echo 'Error ID: ' . $service['id'] . $e->getMessage(). PHP_EOL;
                 // echo 'Error ' . $e->getMessage() . PHP_EOL;
             }
         }
@@ -60,12 +78,11 @@ class OtherParser extends InfoflotAPI
                 $params = [
                     'id'   => $river['id'],
                     'name' => $river['name'],
-                    'slug' => Inflector::slug($river['name']),
                 ];
-                \Yii::$app->db->createCommand()->insert('river', $params)->execute();
+                \Yii::$app->db->createCommand()->insert('rivers', $params)->execute();
             } catch (\Throwable $e) {
                 echo 'Error ID: ' . $river['id'] . PHP_EOL;
-                // echo 'Error ' . $e->getMessage() . PHP_EOL;
+                echo 'Error ' . $e->getMessage() . PHP_EOL;
             }
         }
     }
@@ -77,7 +94,7 @@ class OtherParser extends InfoflotAPI
             return;
         }
 
-        $citiesIDs = \Yii::$app->db->createCommand('SELECT * FROM city')->queryAll();
+        $citiesIDs = \Yii::$app->db->createCommand('SELECT * FROM cities')->queryAll();
         $citiesIDs = ArrayHelper::index($citiesIDs, 'id');
 
         foreach ($cities['data'] as $city) {
@@ -100,14 +117,14 @@ class OtherParser extends InfoflotAPI
                 $model->name        = $cityName;
                 $model->slug        = $citySlug;
                 $model->description = $this->clearText($cityDetail['description']);
-                $model->country_id  = 0;
+                $model->country_id  = 1;
                 if (!$model->save()) {
                     echo 'Error ID: ' . $city['id'] . PHP_EOL;
-                    die();
+                    echo 'Error ' . print_r($model->errors, true) . PHP_EOL;
                     continue;
                 }
 
-                \Yii::$app->db->createCommand()->insert('provider_combination', [
+                \Yii::$app->db->createCommand()->insert('provider_combinations', [
                     'foreign_id'    => $cityDetail['id'],
                     'internal_id'   => $model->id,
                     'model_name'    => self::PROVIDER_MODEL_NAME_CITY,
@@ -119,7 +136,7 @@ class OtherParser extends InfoflotAPI
                         'city_id' => $model->id,
                         'url'     => $this->saveFile($cityDetail['photo']['city_img']['filename'], 'cities/' . $model->id . '/gallery'),
                     ];
-                    \Yii::$app->db->createCommand()->insert('city_media', $params)->execute();
+                    \Yii::$app->db->createCommand()->insert('city_medias', $params)->execute();
                 }
 
                 if (!empty($cityDetail['photos'])) {
@@ -130,7 +147,7 @@ class OtherParser extends InfoflotAPI
                             'city_id' => $model->id,
                             'url'     => $this->saveFile($photo['filename'], 'cities/' . $model->id . '/gallery'),
                         ];
-                        \Yii::$app->db->createCommand()->insert('city_media', $params)->execute();
+                        \Yii::$app->db->createCommand()->insert('city_medias', $params)->execute();
                     }
                 }
             }
@@ -158,7 +175,7 @@ class OtherParser extends InfoflotAPI
                 $transaction = Yii::$app->db->beginTransaction();
                 $slug        = Inflector::slug($country['name']);
 
-                $countriesID = Yii::$app->db->createCommand('SELECT id FROM country WHERE slug = :slug', [
+                $countriesID = Yii::$app->db->createCommand('SELECT id FROM countries WHERE slug = :slug', [
                     ':slug' => $slug,
                 ])->queryOne();
 
@@ -169,8 +186,8 @@ class OtherParser extends InfoflotAPI
                 ];
 
                 if (empty($countriesID)) {
-                    Yii::$app->db->createCommand()->insert('country', $params)->execute();
-                    $countriesID = Yii::$app->db->createCommand('SELECT id FROM country WHERE slug = :slug', [
+                    Yii::$app->db->createCommand()->insert('countries', $params)->execute();
+                    $countriesID = Yii::$app->db->createCommand('SELECT id FROM countries WHERE slug = :slug', [
                         ':slug' => $slug,
                     ])->queryOne();
                 }
@@ -181,7 +198,7 @@ class OtherParser extends InfoflotAPI
                     throw new \RuntimeException('Country not found');
                 }
 
-                Yii::$app->db->createCommand()->insert('provider_combination', [
+                Yii::$app->db->createCommand()->insert('provider_combinations', [
                     'foreign_id'    => $country['id'],
                     'internal_id'   => $countriesID,
                     'provider_name' => self::PROVIDER_NAME,
@@ -220,7 +237,7 @@ class OtherParser extends InfoflotAPI
             try {
 
                 $portSlug = Inflector::slug($port['name'] . '-' . $port['city']);
-                $temp     = Yii::$app->db->createCommand('SELECT id FROM port WHERE slug = :slug', [
+                $temp     = Yii::$app->db->createCommand('SELECT id FROM ports WHERE slug = :slug', [
                     ':slug' => $portSlug,
                 ])->queryOne();
                 if (!empty($temp)) {
@@ -238,7 +255,7 @@ class OtherParser extends InfoflotAPI
                     $cityId = $this->addCity($port['city'], $countryId);
                 }
 
-                Yii::$app->db->createCommand()->insert('port', [
+                Yii::$app->db->createCommand()->insert('{{%ports}}', [
                     'name'       => $port['name'],
                     'slug'       => $portSlug,
                     'city_id'    => $cityId,
@@ -246,7 +263,7 @@ class OtherParser extends InfoflotAPI
                 ])->execute();
 
                 $portId = Yii::$app->db->getLastInsertID();
-                Yii::$app->db->createCommand()->insert('provider_combination', [
+                Yii::$app->db->createCommand()->insert('provider_combinations', [
                     'foreign_id'    => $port['id'],
                     'internal_id'   => $portId,
                     'model_name'    => self::PROVIDER_MODEL_NAME_PORT,
@@ -259,7 +276,7 @@ class OtherParser extends InfoflotAPI
                 }
 
                 foreach ($port['docks'] as $dock) {
-                    Yii::$app->db->createCommand()->insert('dock', [
+                    Yii::$app->db->createCommand()->insert('docks', [
                         'port_id'     => $portId,
                         'name'        => $dock['name'],
                         'address'     => $dock['yandex_address'] ?? $dock['address'],
@@ -267,7 +284,7 @@ class OtherParser extends InfoflotAPI
                     ])->execute();
                     $dockId = Yii::$app->db->getLastInsertID();
 
-                    Yii::$app->db->createCommand()->insert('provider_combination', [
+                    Yii::$app->db->createCommand()->insert('provider_combinations', [
                         'foreign_id'    => $dock['id'],
                         'internal_id'   => $dockId,
                         'model_name'    => self::PROVIDER_MODEL_NAME_DOCK,
@@ -295,11 +312,11 @@ class OtherParser extends InfoflotAPI
             return;
         }
 
-        $sql = "SELECT pc.internal_id, city.name 
-                FROM city 
-                LEFT JOIN provider_combination pc ON city.id = pc.internal_id
+        $sql = "SELECT pc.internal_id, cities.name 
+                FROM cities 
+                LEFT JOIN provider_combinations pc ON cities.id = pc.internal_id
                 WHERE  pc.model_name='city' AND pc.provider_name='infoflot'
-                GROUP BY city.name, pc.internal_id";
+                GROUP BY cities.name, pc.internal_id";
 
         $data = Yii::$app->db->createCommand($sql)->queryAll();
 
@@ -327,11 +344,11 @@ class OtherParser extends InfoflotAPI
             return;
         }
 
-        $sql = "SELECT pc.internal_id, country.name 
-                FROM provider_combination pc
-                LEFT JOIN country ON country.id = pc.internal_id
+        $sql = "SELECT pc.internal_id, countries.name 
+                FROM provider_combinations pc
+                LEFT JOIN countries ON countries.id = pc.internal_id
                 WHERE pc.model_name='country' AND pc.provider_name='infoflot'
-                GROUP BY country.name, pc.internal_id";
+                GROUP BY countries.name, pc.internal_id";
 
         $data = Yii::$app->db->createCommand($sql)->queryAll();
         if (empty($data)) {
@@ -356,19 +373,19 @@ class OtherParser extends InfoflotAPI
     {
         $slug = Inflector::slug($country);
 
-        $temp = Yii::$app->db->createCommand('SELECT id FROM country WHERE slug = :slug', [
+        $temp = Yii::$app->db->createCommand('SELECT id FROM countries WHERE slug = :slug', [
             ':slug' => $slug,
         ])->queryOne();
         if ($temp) {
             return $temp['id'];
         }
 
-        Yii::$app->db->createCommand()->insert('country', [
+        Yii::$app->db->createCommand()->insert('{{%countries}}', [
             'name' => $country,
             'slug' => $slug,
         ])->execute();
 
-        $countryId = Yii::$app->db->createCommand('SELECT id FROM country WHERE slug= :slug', [
+        $countryId = Yii::$app->db->createCommand('SELECT id FROM countries WHERE slug= :slug', [
             ':slug' => $slug,
         ])->queryOne();
         return $countryId['id'];
@@ -378,7 +395,7 @@ class OtherParser extends InfoflotAPI
     {
         $slug = Inflector::slug($city);
 
-        $temp = Yii::$app->db->createCommand('SELECT id FROM city WHERE slug = :slug', [
+        $temp = Yii::$app->db->createCommand('SELECT id FROM cities WHERE slug = :slug', [
             ':slug' => $slug,
         ])->queryOne();
         if ($temp) {
@@ -391,11 +408,153 @@ class OtherParser extends InfoflotAPI
             'country_id' => $countryId,
         ])->execute();
 
-        $cityId = Yii::$app->db->createCommand('SELECT id FROM city WHERE slug=:slug', [
+        $cityId = Yii::$app->db->createCommand('SELECT id FROM cities WHERE slug=:slug', [
             'slug' => $slug,
         ])->queryOne();
 
         return $cityId['id'];
+    }
+
+    public function runRoute()
+    {
+        $routes = $this->request('/popular-routes');
+        if (empty($routes['data'])) {
+            return;
+        }
+
+        foreach ($routes['data'] as $route) {
+            $transaction = Yii::$app->db->beginTransaction();
+            try {
+
+                $slug = Inflector::slug($route['name']);
+                $temp = Yii::$app->db->createCommand('SELECT id FROM popular_routes WHERE slug = :slug', [
+                    ':slug' => $slug,
+                ])->queryOne();
+
+                if ($temp) {
+                    $transaction->commit();
+                    continue;
+                }
+
+                Yii::$app->db->createCommand()->insert('{{%popular_routes}}', [
+                    'name' => $route['name'],
+                    'slug' => $slug,
+                ])->execute();
+
+                $routeId = Yii::$app->db->getLastInsertID();
+
+                Yii::$app->db->createCommand()->insert('provider_combinations', [
+                    'foreign_id'    => $route['id'],
+                    'internal_id'   => $routeId,
+                    'model_name'    => self::PROVIDER_MODEL_POPULAR_ROUTES,
+                    'provider_name' => self::PROVIDER_NAME,
+                ])->execute();
+
+                $transaction->commit();
+            } catch (\Throwable $e) {
+                $transaction->rollBack();
+            }
+        }
+    }
+
+    public function runRegions()
+    {
+        $regions = $this->request('/regions');
+        if (empty($regions['data'])) {
+            return;
+        }
+
+        foreach ($regions['data'] as $region) {
+            $transaction = Yii::$app->db->beginTransaction();
+            try {
+
+                $slug = Inflector::slug($region['name']);
+                $temp = Yii::$app->db->createCommand('SELECT id FROM regions WHERE slug = :slug', [
+                    ':slug' => $slug,
+                ])->queryOne();
+
+                if ($temp) {
+                    $transaction->commit();
+                    continue;
+                }
+
+                Yii::$app->db->createCommand()->insert('{{%regions}}', [
+                    'name' => $region['name'],
+                    'slug' => $slug,
+                ])->execute();
+
+                $regionId = Yii::$app->db->getLastInsertID();
+
+                Yii::$app->db->createCommand()->insert('provider_combinations', [
+                    'foreign_id'    => $region['id'],
+                    'internal_id'   => $regionId,
+                    'model_name'    => self::PROVIDER_MODEL_REGIONS,
+                    'provider_name' => self::PROVIDER_NAME,
+                ])->execute();
+
+                $transaction->commit();
+            } catch (\Throwable $e) {
+                $transaction->rollBack();
+            }
+        }
+    }
+
+    public function runPlaces()
+    {
+        $places = $this->request('/public-places');
+        if (empty($places['data'])) {
+            return;
+        }
+
+        foreach ($places['data'] as $place) {
+            $transaction = Yii::$app->db->beginTransaction();
+            try {
+
+                $temp = Yii::$app->db->createCommand('
+                   SELECT internal_id 
+                   FROM provider_combinations 
+                   WHERE foreign_id = :foreign_id
+                   AND provider_name = :provider_name
+                   AND model_name = :model_name
+                   ', [
+                    ':foreign_id'    => $place['id'],
+                    ':provider_name' => self::PROVIDER_NAME,
+                    ':model_name'    => self::PROVIDER_MODEL_PLACES
+                ])->queryOne();
+                if (!empty($temp)) {
+
+                    $transaction->commit();
+                    continue;
+                }
+                $photo='';
+                if(!empty($place['photo'])) {
+                    $photo = $this->saveFile($place['photo'], 'public_places');
+                }
+
+
+                Yii::$app->db->createCommand()->insert('{{%public_places}}', [
+                    'name'        => $place['name'],
+                    'description' => $this->clearText($place['description']),
+                    'photo'       => $photo,
+                    'icon'        => '',
+                ])->execute();
+
+                $placeId = Yii::$app->db->getLastInsertID();
+
+                Yii::$app->db->createCommand()->insert('provider_combinations', [
+                    'foreign_id'    => $place['id'],
+                    'internal_id'   => $placeId,
+                    'model_name'    => self::PROVIDER_MODEL_PLACES,
+                    'provider_name' => self::PROVIDER_NAME,
+                ])->execute();
+
+                $transaction->commit();
+            } catch (\Throwable $e) {
+
+                echo 'Error ' . $e->getMessage() . PHP_EOL;
+                $transaction->rollBack();
+            }
+        }
     }
 
 }

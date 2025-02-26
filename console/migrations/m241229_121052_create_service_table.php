@@ -15,7 +15,6 @@ class m241229_121052_create_service_table extends Migration
         $this->createTable('{{%services}}', [
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),
-            'slug' => $this->string()->notNull()->unique(),
             'icon' => $this->string(),
             'description' => $this->text(),
             'priority' => $this->integer()->defaultValue(0),
@@ -25,8 +24,6 @@ class m241229_121052_create_service_table extends Migration
         ]);
 
         $this->addCommentOnTable('{{%services}}', 'Сервисы на борту');
-
-        $this->createIndex('idx_service_slug', '{{%services}}', 'slug');
     }
 
     /**
