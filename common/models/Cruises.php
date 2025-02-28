@@ -32,6 +32,7 @@ use yii\db\ActiveQuery as ActiveQueryAlias;
  * @property int|null                      $nights
  * @property int|null                      $min_price
  * @property int|null                      $max_price
+ * @property int|null                      $defaultPrice
  * @property string|null                   $currency       Валюта
  * @property int|null                      $free_cabins
  * @property int                           $ship_id
@@ -66,6 +67,7 @@ class Cruises extends \yii\db\ActiveRecord
 {
 
     const STATUS_ACTIVE = 10;
+    const STATUS_INACTIVE = 0;
 
     /**
      * {@inheritdoc}
@@ -90,7 +92,7 @@ class Cruises extends \yii\db\ActiveRecord
                 [
                     'status', 'date_start_timestamp', 'date_end_timestamp', 'days', 'nights', 'min_price', 'max_price',
                     'free_cabins', 'ship_id', 'port_start_id', 'port_end_id', 'city_start_id', 'city_end_id',
-                    'type_id'], 'integer'],
+                    'type_id', 'defaultPrice'], 'integer'],
             [['date_start', 'date_end', 'cabins_json', 'timetable_json', 'created_at', 'updated_at'], 'safe'],
             [['name', 'slug', 'map', 'currency', 'dock_start'], 'string', 'max' => 255],
             [['slug'], 'unique'],
@@ -140,6 +142,7 @@ class Cruises extends \yii\db\ActiveRecord
             'nights'               => 'Nights',
             'min_price'            => 'Min Price',
             'max_price'            => 'Max Price',
+            'defaultPrice'         => 'defaultPrice',
             'currency'             => 'Валюта',
             'free_cabins'          => 'Free Cabins',
             'ship_id'              => 'Ship ID',

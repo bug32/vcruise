@@ -24,9 +24,9 @@ class InfoflotAPI
     public const               PROVIDER_MODEL_NAME_COUNTRY    = 'country';
     public const               PROVIDER_MODEL_NAME_DOCK       = 'dock';
     public const               PROVIDER_MODEL_POPULAR_ROUTES  = 'popular-routes';
-    public const               PROVIDER_MODEL_REGIONS  = 'regions';
-    public const               PROVIDER_MODEL_PLACES  = 'public-places';
-    public const               PROVIDER_MODEL_SERVICE  = 'service';
+    public const               PROVIDER_MODEL_REGIONS         = 'regions';
+    public const               PROVIDER_MODEL_PLACES          = 'public-places';
+    public const               PROVIDER_MODEL_SERVICE         = 'service';
     public const               BASE_URL                       = 'https://restapi.infoflot.com';
     public const               TOKEN                          = "ddf71b33662078a069d2a1eacafefb33cc783bf6";
     public const               PAGE_LIMIT                     = 50;
@@ -70,7 +70,12 @@ class InfoflotAPI
         $data = curl_exec($ch);
         curl_close($ch);
 
-        return json_decode($data, TRUE, 512, JSON_THROW_ON_ERROR);
+        try {
+            return json_decode($data, TRUE, 512, JSON_THROW_ON_ERROR);
+        }catch (JsonException $e) {
+            return [];
+        }
+
     }
 
     public function getServices(): array
@@ -170,7 +175,7 @@ class InfoflotAPI
         ])->execute();
     }
 
-    protected function getProviderCabinType($shipId): array
+    protected function getProviderCabinType($shipId = ''): array
     {
         $sql = "SELECT provider_combinations.* 
             FROM provider_combinations 

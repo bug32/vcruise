@@ -18,10 +18,12 @@ class CruisesSearch extends Cruises
     public $page;
     public $date_start;
     public $date_end;
+    public $ship_id;
 
     public function rules(): array
     {
         return [
+            ['ship_id', 'integer'],
             [['limit', 'page'], 'integer'],
             ['limit', 'default', 'value' => self::DEFAULT_PAGE_LIMIT],
             ['page', 'filter', 'filter' => fn($page) => $page > 0 ? $page : 1],
@@ -98,8 +100,12 @@ class CruisesSearch extends Cruises
             $q->andWhere(['between', 'c.date_start', $this->date_start, $this->date_end]);
         }
 
+        if( $this->ship_id ) {
+            $q->andWhere(['c.ship_id' => $this->ship_id]);
+        }
+
         $q->limit($this->limit)
-            ->offset($this->page - 1);
+            ->offset(($this->page - 1) * $this->limit);
 
         return $q->all();
     }

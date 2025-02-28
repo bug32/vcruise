@@ -76,6 +76,7 @@ class BaseApiController extends Controller
         $response = [
             'success' => TRUE,
             'items'    => $result,
+            'total' => 38,
             'message' => $message
         ];
 

@@ -2,7 +2,7 @@
 
 namespace console\controllers;
 
-use console\models\Ship;
+use console\services\providers\infoflot\parsers\CabinsParser;
 use console\services\providers\infoflot\parsers\CruiseParse;
 use console\services\providers\infoflot\parsers\OtherParser;
 use yii\console\Controller;
@@ -99,6 +99,12 @@ class InfoflotController extends Controller
         $places = new OtherParser();
         $places->runPlaces();
 
+    }
+
+    public function actionCabins()
+    {
+        $cabins = new CabinsParser();
+        $cabins->run();
     }
 
 

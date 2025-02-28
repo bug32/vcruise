@@ -34,6 +34,7 @@ class m241230_080833_create_cruise_table extends Migration
 
             'min_price' => $this->integer(),
             'max_price' => $this->integer(),
+            'defaultPrice' => $this->integer()->defaultValue(0)->comment('Цена по умолчанию, без скидки'),
             'currency' => $this->string()->defaultValue(1)->comment('Валюта'),
 
             'free_cabins' => $this->integer()->defaultValue(0),
