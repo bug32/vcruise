@@ -65,7 +65,7 @@ class CabinsParser extends InfoflotAPI
                 $defaultPriceMin = 0;
                 foreach ($dataCabins['prices'] as $type => $price) {
                     $prices[$type]       = $price['prices']['main_bottom']['adult'];
-                    $defaultPrice[$type] = $price['prices']['default'];
+                    $defaultPrice[$type] = $price['prices']['default']??0;
                     $defaultPriceMin     = $defaultPrice[$type];
                 }
 

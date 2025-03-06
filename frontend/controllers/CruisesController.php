@@ -3,6 +3,7 @@
 namespace frontend\controllers;
 
 use frontend\models\cruises\CruisesSearch;
+use frontend\models\forms\CruisesFilterForm;
 use Yii;
 use yii\base\InvalidConfigException;
 use yii\db\Exception;
@@ -41,8 +42,12 @@ class CruisesController extends BaseApiController
      */
     public function actionGet()
     {
+
+        $filterForm = new CruisesFilterForm();
+        $filterForm->load(Yii::$app->request->get());
+
         $cruises = new CruisesSearch();
-        $items = $cruises->filter( Yii::$app->request->get());
+        $items = $cruises->filter( $filterForm);
 
         return $this->sendResponse($items, 'success');
     }

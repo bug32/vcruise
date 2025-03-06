@@ -85,6 +85,11 @@ class SiteController extends Controller
         return $this->render('index');
     }
 
+    public function actionFlush()
+    {
+        Yii::$app->cache->flush();
+    }
+
     /**
      * Logs in a user.
      *

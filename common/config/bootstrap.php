@@ -6,3 +6,6 @@ Yii::setAlias('@console', dirname(__DIR__, 2) . '/console');
 
 Yii::setAlias('@static', dirname(__DIR__, 2) . '/static');
 Yii::setAlias('@staticPublic', dirname(__DIR__, 2) . '/static/public');
+
+
+Yii::setAlias('@imageHost',  'http://vc.loc');

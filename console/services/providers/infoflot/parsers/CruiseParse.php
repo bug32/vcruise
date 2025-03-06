@@ -25,7 +25,7 @@ class CruiseParse extends InfoflotAPI
         set_time_limit(0);
 
         $nextPage = '/cruises';
-        $page     = 1;
+        $page     = 37;
 
         while ($nextPage) {
             try {
@@ -53,11 +53,11 @@ class CruiseParse extends InfoflotAPI
                         'foreign_id'    => $item['id'],
                         'model_name'    => self::PROVIDER_MODEL_NAME_CRUISE]);
 
-                    $title = $this->clearText($cruise['beautifulName']);
+                    $title = $this->getTitle($cruise);
 
                     $type_id = $this->getTypeId($cruise);
 
-                    $slug   = $this->getSlug($cruise);
+                    $slug   = $this->getSlug($title);
                     $params = [
                         'name'        => $title,
                         'slug'        => $slug,
@@ -83,13 +83,13 @@ class CruiseParse extends InfoflotAPI
 
                         'free_cabins' => $cruise['freeCabins'],
 
-                        'ship_id' => $this->getShipId($cruise['ship'] ?? []),
+                        'ship_id'       => $this->getShipId($cruise['ship'] ?? []),
                         'parent_cruise' => $cruise['parentCruise'],
 
                         'port_start_id' => $this->getPortId($cruise['portStart'] ?? ''),
                         'port_end_id'   => $this->getPortId($cruise['portEnd'] ?? ''),
                         'city_start_id' => $this->getCityId($cruise['startCity'] ?? ''),
-                        'city_end_id'   => $this->getCityId($cruise['endCity'] ?? ''),
+                        'city_end_id'   => $this->getCityIdEnd($cruise),
 
                         'type_id' => $type_id,
 
@@ -98,52 +98,69 @@ class CruiseParse extends InfoflotAPI
                     ];
 
                     if ($check) {
+                        unset($params['cabins_json']); // каюты не обнуляем
                         \Yii::$app->db->createCommand()->update('{{%cruises}}', $params, ['id' => $check['internal_id']])->execute();
-                        echo 'UP cruise ID :' . $cruise['id'] . PHP_EOL;
+                        echo 'UP cruise ID :' . $cruise['id'] . ' => ' . $check['internal_id'] . PHP_EOL;
                         continue;
-                    } else {
-                        \Yii::$app->db->createCommand()->insert('{{%cruises}}', $params)->execute();
-                        $cruiseNew = \Yii::$app->db->createCommand("SELECT id FROM cruises WHERE slug=:slug", ['slug' => $slug])->queryOne();
-
-                        \Yii::$app->db->createCommand()->insert('provider_combinations', [
-                            'provider_name' => self::PROVIDER_NAME,
-                            'foreign_id'    => $cruise['id'],
-                            'model_name'    => self::PROVIDER_MODEL_NAME_CRUISE,
-                            'internal_id'   => $cruiseNew['id'],
-                        ])->execute();
-
-                        $this->includeRivers($cruise['rivers'], $cruiseNew['id']);
-                        $this->includeRoutes($cruise['popularRoutes'], $cruiseNew['id']);
-                        $this->includePhoto($cruise['photos'], $cruiseNew['id']);
-                        $this->includeRegion($cruise['regions'], $cruiseNew['id']);
-
                     }
+                    \Yii::$app->db->createCommand()->insert('{{%cruises}}', $params)->execute();
+                    $cruiseNew = \Yii::$app->db->createCommand("SELECT id FROM cruises WHERE slug=:slug", ['slug' => $slug])->queryOne();
+
+                    \Yii::$app->db->createCommand()->insert('provider_combinations', [
+                        'provider_name' => self::PROVIDER_NAME,
+                        'foreign_id'    => $cruise['id'],
+                        'model_name'    => self::PROVIDER_MODEL_NAME_CRUISE,
+                        'internal_id'   => $cruiseNew['id'],
+                    ])->execute();
+
+                    $this->includeRivers($cruise['rivers'], $cruiseNew['id']);
+                    $this->includeRoutes($cruise['popularRoutes'], $cruiseNew['id']);
+                    $this->includePhoto($cruise['photos'], $cruiseNew['id']);
+                    $this->includeRegion($cruise['regions'], $cruiseNew['id']);
+
 
                     echo 'ADD cruise ID :' . $cruise['id'] . PHP_EOL;
                     echo "Internal ID :" . ($cruiseNew['id'] ?? $check['internal_id']) . PHP_EOL;
                 } catch (Throwable $e) {
-                    echo "Error " . $e->getMessage() . PHP_EOL;
+                    echo 'Cruise ID: ' . $item['id'] . PHP_EOL;
+                    echo "Error line " . $e->getLine() . PHP_EOL;
+                    echo "Error message " . $e->getMessage() . PHP_EOL;
                     continue;
                 }
             }
         }
     }
 
-    protected function getSlug(array $cruise): string
+    protected function getSlug(string $title): string
     {
+        return Inflector::slug($title);
+    }
+
+    protected function getTitle(array $cruise): string
+    {
+        // Круиз {beautifulName} на {ship_name} из {routeShort} с {dateStart}
+
         $name  = $this->clearText($cruise['beautifulName']);
         $route = $this->clearText($cruise['routeShort'] ?? $cruise['route']);
         $route = trim(preg_replace('/\s*\([^)]*\)/', '', $route));
         $date  = FormatDate::formatDate($cruise['dateStart'], 'd MMMM');
 
-        $title = 'Круиз ';
-        if (!empty($name)) {
-            $title .= $name . ' из ' . $cruise['startCityName'] . ' с ' . $date;
-        } else {
-            $title .= ' из ' . $route . ' с ' . $date;
+
+        $cityName = '';
+        if (!empty($cruise['timetable'])) {
+            $cityName = $cruise['timetable'][array_key_last($cruise['timetable'])]['city']['name'];
         }
 
-        return Inflector::slug($title);
+        if( empty($cityName)){
+            $temp = explode('-', $route);
+            $cityName = end($temp);
+        }
+
+        if( $cruise['startCityName'] == $cityName){
+            return 'Круиз ' . $name . ' на ' . $cruise['ship']['name'] . ' из ' . $cruise['startCityName'] . ' с ' . $date;
+        }
+
+        return 'Круиз ' . $name . ' на ' . $cruise['ship']['name'] . ' из ' . $cruise['startCityName'] . ' в ' . $cityName . ' с ' . $date;
     }
 
 
@@ -200,23 +217,25 @@ class CruiseParse extends InfoflotAPI
         return $providerCombination->internal_id;
     }
 
-    protected function getCityId(mixed $param)
+    protected function getCityId(mixed $cityId)
     {
-        if (empty($param['id'])) {
+        if (empty($cityId)) {
             return 1;
         }
+
+        $cityId = (int)$cityId;
 
         if (empty($this->providerCityID)) {
             $this->providerCityID = $this->getProviderCity();
         }
 
-        if ($this->providerCityID[$param['id']]) {
-            return $this->providerCityID[$param['id']]['internal_id'];
+        if ($this->providerCityID[$cityId]) {
+            return $this->providerCityID[$cityId]['internal_id'];
         }
 
         $providerCombination = ProviderCombination::findOne([
             'provider_name' => self::PROVIDER_NAME,
-            'foreign_id'    => $param['id'],
+            'foreign_id'    => $cityId,
             'model_name'    => self::PROVIDER_MODEL_NAME_CITY
         ]);
 
@@ -224,9 +243,18 @@ class CruiseParse extends InfoflotAPI
             return 1;
         }
 
-        $this->providerCityID[$param['id']] = $providerCombination->internal_id;
+        $this->providerCityID[$cityId] = $providerCombination->internal_id;
 
         return $providerCombination->internal_id;
+    }
+
+    protected function getCityIdEnd(array $cruise): string
+    {
+        if (!empty($cruise['timetable'])) {
+            $city_id = $cruise['timetable'][array_key_last($cruise['timetable'])]['cityId'];
+            return $this->getCityId($city_id);
+        }
+        return 1;
     }
 
 
@@ -426,7 +454,7 @@ class CruiseParse extends InfoflotAPI
 
     protected function includeRegion(mixed $regions, mixed $id): void
     {
-        if(empty($regions)){
+        if (empty($regions)) {
             return;
         }
 
@@ -443,7 +471,7 @@ class CruiseParse extends InfoflotAPI
                     ':name'          => self::PROVIDER_MODEL_REGIONS
                 ])->queryOne();
 
-            if( empty($temp)){
+            if (empty($temp)) {
                 continue;
             }
 
@@ -454,4 +482,5 @@ class CruiseParse extends InfoflotAPI
 
         }
     }
+
 }

@@ -293,6 +293,8 @@ class Cruises extends \yii\db\ActiveRecord
         return $this->hasMany(Suggestions::class, ['id' => 'suggestion_id'])->viaTable('cruise_suggestion_relations', ['cruise_id' => 'id']);
     }
 
+
+
     /**
      * Gets query for [[Type]].
      *

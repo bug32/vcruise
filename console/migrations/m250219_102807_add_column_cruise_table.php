@@ -18,9 +18,9 @@ class m250219_102807_add_column_cruise_table extends Migration
             $this->integer()->defaultValue(1)->comment('Тип круиза')
         );
 
+
+
         $this->addForeignKey('fk_cruise_medias', '{{%cruises}}', 'id', '{{%cruise_medias}}', 'cruise_id', 'CASCADE');
-
-
 
         $this->addForeignKey(
             'fk_cruise_type',

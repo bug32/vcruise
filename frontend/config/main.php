@@ -40,7 +40,7 @@ return [
         ],
 
         'user'         => [
-            'identityClass'   => 'common\models\User',
+            'identityClass'   => \common\models\User::class,
             'enableAutoLogin' => TRUE,
             'identityCookie'  => ['name' => '_identity-frontend', 'httpOnly' => TRUE],
         ],

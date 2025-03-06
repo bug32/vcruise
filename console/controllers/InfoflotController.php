@@ -5,7 +5,9 @@ namespace console\controllers;
 use console\services\providers\infoflot\parsers\CabinsParser;
 use console\services\providers\infoflot\parsers\CruiseParse;
 use console\services\providers\infoflot\parsers\OtherParser;
+use Random\RandomException;
 use yii\console\Controller;
+use yii\db\Exception;
 
 class InfoflotController extends Controller
 {
@@ -38,10 +40,15 @@ class InfoflotController extends Controller
         $other->runPlaces();
     }
 
+    /**
+     * @throws Exception
+     * @throws RandomException
+     * @throws \JsonException
+     */
     public function actionShip(): void
     {
         $parserShip = new \console\services\providers\infoflot\parsers\ShipParser();
-        $parserShip->run();
+        $parserShip->run(TRUE);
     }
 
     public function actionCruise():void

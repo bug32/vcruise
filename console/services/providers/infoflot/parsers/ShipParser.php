@@ -128,7 +128,7 @@ class ShipParser extends InfoflotAPI
                     }
                     */
 
-                    Yii::$app->db->createCommand()->update(Ship::tableName(), $params, ['id' => $internalId])->execute();
+                  //  Yii::$app->db->createCommand()->update(Ship::tableName(), $params, ['id' => $internalId])->execute();
 
                     if ($isNewShip) {
                         Yii::$app->db->createCommand()->insert('provider_combinations',
@@ -140,18 +140,20 @@ class ShipParser extends InfoflotAPI
                             ])->execute();
                         $this->saveGallery($ship, $internalId); // загрузка фото корабля
                         $this->savePhoto($ship, $internalId);
+
+                        //$this->includeOnboard($ship);          //
+                        $this->includeSug($ship, $internalId);              //
+                        $this->saveDeck($ship, $internalId);
+                        $this->saveCabinType($ship['cabinTypes'], $internalId);
+                        $this->saveCabins($ship['cabins'], $internalId);
                     }
 
                     if( $updatePhoto){
+                        echo 'Update photos'.PHP_EOL;
                         $this->saveGallery($ship, $internalId); // загрузка фото корабля
                         $this->savePhoto($ship, $internalId);
                     }
 
-                    //$this->includeOnboard($ship);          //
-                    $this->includeSug($ship, $internalId);              //
-                    $this->saveDeck($ship, $internalId);
-                    $this->saveCabinType($ship['cabinTypes'], $internalId);
-                    $this->saveCabins($ship['cabins'], $internalId);
 
                     echo "Create ShipID " . $ship['id'] . PHP_EOL;
                 } catch (Exception $e) {
@@ -437,7 +439,7 @@ class ShipParser extends InfoflotAPI
             }
 
 
-            // Сожранение картинок кают
+            // Сохранение картинок кают
             foreach ($cabinType['photos'] as $photo) {
                 try {
                     $params = [
@@ -531,7 +533,7 @@ class ShipParser extends InfoflotAPI
     protected function savePhoto(array $ship, int|string|null $internalId)
     {
         foreach ($ship['files'] as $key => $file) {
-            if (empty($file['filename'])) {
+            if (empty($file['path'])) {
                 continue;
             }
 
