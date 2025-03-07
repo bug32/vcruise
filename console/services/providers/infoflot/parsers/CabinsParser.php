@@ -158,15 +158,14 @@ class CabinsParser extends InfoflotAPI
                 }
 
                 $params = [
-                    'cabins_json'  => $statusCabins,
                     'free_cabins'  => $dataCabins['cruise'][0]['freeCabins'],
                     'min_price'    => $dataCabins['cruise'][0]['min_price_absolute'],
                     'max_price'    => $dataCabins['cruise'][0]['max_price_absolute'],
                     'defaultPrice' => $defaultPriceMin,
                 ];
 
-
                 $this->updateCruise($cruise, $params);
+                $this->updateCabins($cruise, $statusCabins);
                 echo 'Update cruise ' . $cruise . ' OK ' . PHP_EOL;
                 //  return;
             } catch (Exception $e) {
@@ -180,7 +179,7 @@ class CabinsParser extends InfoflotAPI
     /**
      * @throws Exception
      */
-    protected function updateCruise($cruise_id, array $params)
+    protected function updateCruise($cruise_id, array $params): void
     {
         /// echo 'Update cruise ' . $cruise_id . PHP_EOL;
         \Yii::$app->db->createCommand()->update('cruises', $params, 'id=:id', [':id' => $cruise_id])->execute();
@@ -203,6 +202,24 @@ class CabinsParser extends InfoflotAPI
         }
 
         return $this->providerCruise[$cruise];
+    }
+
+    protected function updateCabins(mixed $cruise, array $statusCabins): void
+    {
+        $old = \Yii::$app->db->createCommand('SELECT id FROM cruise_cabins WHERE cruise_id = :cruise_id', [
+            ':cruise_id' => $cruise
+        ])->execute();
+
+        if ($old) {
+           \Yii::$app->db->createCommand()->update('cruise_cabins', ['cabin_json' => $statusCabins], 'cruise_id=:cruise_id', [':cruise_id' => $cruise])->execute();
+           return ;
+        }
+
+        \Yii::$app->db->createCommand()->insert('cruise_cabins', [
+            'cruise_id' => $cruise,
+            'cabin_json' => $statusCabins,
+            'created_at' => time(),
+        ])->execute();
     }
 
 }

@@ -11,6 +11,7 @@ class CityMediaResources extends CityMedias
     public function fields():array
     {
         return [
+            'id',
             'alt',
             'mime_type',
             'url' => function ($model) {

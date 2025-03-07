@@ -81,8 +81,10 @@ return [
                 'login' => 'site/login',
 
                 'cruises' => 'cruise/index',
+                'cruises/<id:\d+>' => 'cruises/view',
+                'cruises/<id:\d+>/cabins' => 'cruises/cabins',
                 'cruises/<action:\w+>' => 'cruises/<action>',
-                'cruises/<slug>-<id>' => 'cruises/view',
+
 
                 '<controller:\w+>/<id:\d+>'              => '<controller>/view',
                 '<controller:\w+>/<action:\w+>/<id:\d+>' => '<controller>/<action>',
